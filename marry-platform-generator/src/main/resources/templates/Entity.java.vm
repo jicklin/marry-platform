@@ -1,0 +1,30 @@
+package ${packageName}.entity;
+
+#foreach($c in $columns)
+#set($javaType = $c.javaType)
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
+import lombok.Data;
+
+import java.io.Serial;
+import java.io.Serializable;
+#end
+
+@Data
+@TableName("${tableName}")
+public class ${className} implements Serializable {
+
+    @Serial
+    private static final long serialVersionUID = 1L;
+
+#foreach($c in $columns)
+#if(${c.isPk} == 1)
+    @TableId(type = IdType.AUTO)
+    private ${c.javaType} ${c.javaField};
+#else
+    private ${c.javaType} ${c.javaField};
+#end
+
+#end
+}

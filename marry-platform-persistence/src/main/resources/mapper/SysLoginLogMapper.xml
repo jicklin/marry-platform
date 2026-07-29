@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.marry.persistence.mapper.SysLoginLogMapper">
+
+    <select id="countToday" resultType="long">
+        SELECT COUNT(*) FROM sys_login_log
+        WHERE login_time <![CDATA[>=]]> CURRENT_DATE
+          AND login_time <![CDATA[<]]> CURRENT_DATE + INTERVAL '1 day'
+    </select>
+
+    <select id="countBetween" resultType="long">
+        SELECT COUNT(*) FROM sys_login_log WHERE login_time BETWEEN #{begin} AND #{end}
+    </select>
+
+    <select id="countByStatus" resultType="map">
+        SELECT status AS name, COUNT(*) AS value
+        FROM sys_login_log
+        WHERE login_time <![CDATA[>=]]> CURRENT_DATE - (INTERVAL '1 day' * #{days})
+        GROUP BY status
+    </select>
+
+    <delete id="cleanBefore">
+        DELETE FROM sys_login_log WHERE login_time <![CDATA[<]]> #{cutoff}
+    </delete>
+
+</mapper>

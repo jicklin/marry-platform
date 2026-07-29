@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.marry.persistence.mapper.SysOperLogMapper">
+
+    <select id="countToday" resultType="long">
+        SELECT COUNT(*) FROM sys_oper_log
+        WHERE oper_time <![CDATA[>=]]> CURRENT_DATE
+          AND oper_time <![CDATA[<]]> CURRENT_DATE + INTERVAL '1 day'
+    </select>
+
+    <select id="countBetween" resultType="long">
+        SELECT COUNT(*) FROM sys_oper_log WHERE oper_time BETWEEN #{begin} AND #{end}
+    </select>
+
+    <select id="countByBusinessType" resultType="map">
+        SELECT business_type AS name, COUNT(*) AS value
+        FROM sys_oper_log
+        WHERE oper_time <![CDATA[>=]]> CURRENT_DATE - (INTERVAL '1 day' * #{days})
+        GROUP BY business_type
+        ORDER BY value DESC
+    </select>
+
+    <delete id="cleanBefore">
+        DELETE FROM sys_oper_log WHERE oper_time <![CDATA[<]]> #{cutoff}
+    </delete>
+
+</mapper>

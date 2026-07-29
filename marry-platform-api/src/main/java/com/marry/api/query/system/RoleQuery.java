@@ -1,0 +1,21 @@
+package com.marry.api.query.system;
+
+import com.marry.common.base.PageQuery;
+import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+
+import java.io.Serial;
+
+@Data
+@EqualsAndHashCode(callSuper = true)
+@Schema(description = "Role list query")
+public class RoleQuery extends PageQuery {
+
+    @Serial
+    private static final long serialVersionUID = 1L;
+
+    private String name;
+    private String code;
+    private Integer status;
+}

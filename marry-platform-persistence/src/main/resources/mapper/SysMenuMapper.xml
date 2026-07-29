@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.marry.persistence.mapper.SysMenuMapper">
+
+    <resultMap id="menuResult" type="com.marry.domain.entity.SysMenu">
+        <id property="id" column="id"/>
+        <result property="parentId" column="parent_id"/>
+        <result property="name" column="name"/>
+        <result property="menuType" column="menu_type"/>
+        <result property="path" column="path"/>
+        <result property="component" column="component"/>
+        <result property="perm" column="perm"/>
+        <result property="icon" column="icon"/>
+        <result property="orderNum" column="order_num"/>
+        <result property="visible" column="visible"/>
+        <result property="status" column="status"/>
+        <result property="isCache" column="is_cache"/>
+        <result property="isFrame" column="is_frame"/>
+    </resultMap>
+
+    <select id="selectByRoleIds" resultMap="menuResult">
+        SELECT DISTINCT m.*
+        FROM sys_menu m
+        JOIN sys_role_menu rm ON rm.menu_id = m.id
+        WHERE rm.role_id IN
+        <foreach collection="roleIds" item="rid" open="(" close=")" separator=",">
+            #{rid}
+        </foreach>
+        AND m.status = 1 AND m.del_flag = 0
+        ORDER BY m.order_num ASC
+    </select>
+
+    <select id="selectByUserId" resultMap="menuResult">
+        SELECT DISTINCT m.*
+        FROM sys_menu m
+        JOIN sys_role_menu rm ON rm.menu_id = m.id
+        JOIN sys_user_role ur ON ur.role_id = rm.role_id
+        WHERE ur.user_id = #{userId}
+          AND m.status = 1 AND m.del_flag = 0
+        ORDER BY m.parent_id, m.order_num
+    </select>
+
+    <select id="selectPermsByUserId" resultType="string">
+        SELECT DISTINCT m.perm
+        FROM sys_menu m
+        JOIN sys_role_menu rm ON rm.menu_id = m.id
+        JOIN sys_user_role ur ON ur.role_id = rm.role_id
+        WHERE ur.user_id = #{userId}
+          AND m.perm IS NOT NULL AND m.perm <![CDATA[<>]]> ''
+          AND m.status = 1 AND m.del_flag = 0
+    </select>
+
+    <select id="selectMenuIdsByRoleId" resultType="long">
+        SELECT menu_id FROM sys_role_menu WHERE role_id = #{roleId}
+    </select>
+
+</mapper>

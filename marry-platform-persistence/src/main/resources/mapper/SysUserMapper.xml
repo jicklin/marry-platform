@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.marry.persistence.mapper.SysUserMapper">
+
+    <resultMap id="userResult" type="com.marry.domain.entity.SysUser">
+        <id property="id" column="id"/>
+        <result property="username" column="username"/>
+        <result property="password" column="password"/>
+        <result property="nickName" column="nick_name"/>
+        <result property="email" column="email"/>
+        <result property="phone" column="phone"/>
+        <result property="avatar" column="avatar"/>
+        <result property="sex" column="sex"/>
+        <result property="deptId" column="dept_id"/>
+        <result property="status" column="status"/>
+        <result property="loginIp" column="login_ip"/>
+        <result property="loginDate" column="login_date"/>
+        <result property="remark" column="remark"/>
+        <result property="createBy" column="create_by"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateBy" column="update_by"/>
+        <result property="updateTime" column="update_time"/>
+        <result property="delFlag" column="del_flag"/>
+    </resultMap>
+
+    <select id="selectByUsername" resultMap="userResult">
+        SELECT * FROM sys_user
+        WHERE username = #{username} AND del_flag = 0
+        LIMIT 1
+    </select>
+
+    <select id="selectPermsByUserId" resultType="string">
+        SELECT DISTINCT m.perm
+        FROM sys_menu m
+        JOIN sys_role_menu rm ON rm.menu_id = m.id
+        JOIN sys_user_role ur ON ur.role_id = rm.role_id
+        WHERE ur.user_id = #{userId}
+          AND m.perm IS NOT NULL AND m.perm <![CDATA[<>]]> ''
+          AND m.del_flag = 0
+    </select>
+
+    <select id="selectRoleCodesByUserId" resultType="string">
+        SELECT DISTINCT r.code
+        FROM sys_role r
+        JOIN sys_user_role ur ON ur.role_id = r.id
+        WHERE ur.user_id = #{userId}
+          AND r.status = 1 AND r.del_flag = 0
+    </select>
+
+    <select id="selectRoleIdsByUserId" resultType="long">
+        SELECT DISTINCT r.id
+        FROM sys_role r
+        JOIN sys_user_role ur ON ur.role_id = r.id
+        WHERE ur.user_id = #{userId}
+          AND r.status = 1 AND r.del_flag = 0
+    </select>
+
+</mapper>

@@ -1,0 +1,14 @@
+import request from '@/utils/request'
+
+export function page${className}s(params: any) {
+  return request.get('/${moduleName}/${classNameLower}/list', { params })
+}
+export function create${className}(data: any) {
+  return request.post('/${moduleName}/${classNameLower}', data)
+}
+export function update${className}(data: any) {
+  return request.put('/${moduleName}/${classNameLower}', data)
+}
+export function delete${className}s(ids: number[]) {
+  return request.delete(`/${moduleName}/${classNameLower}/${ids.join(',')}`)
+}

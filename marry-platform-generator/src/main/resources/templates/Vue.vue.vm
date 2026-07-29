@@ -1,0 +1,37 @@
+<template>
+  <div class="page-container">
+    <div class="page-header"><div class="page-header-title">${functionName}</div></div>
+    <n-card>
+      <n-data-table :columns="columns" :data="rows" :loading="loading" :pagination="pagination"
+                    @update:page="(p) => { query.pageNum = p; load() }" />
+    </n-card>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { onMounted, ref } from 'vue'
+import { NCard, NDataTable } from 'naive-ui'
+import { page${className}s } from '@/api/${classNameLower}'
+
+const query = ref<any>({ pageNum: 1, pageSize: 10 })
+const rows = ref<any[]>([])
+const loading = ref(false)
+const pagination = ref({ page: 1, pageSize: 10, itemCount: 0 })
+
+const columns = [
+#foreach($c in $columns)
+  { title: '${c.columnComment}', key: '${c.javaField}', minWidth: 120 },
+#end
+]
+
+async function load() {
+  loading.value = true
+  try {
+    const res: any = await page${className}s(query.value)
+    rows.value = res.records || []
+    pagination.value = { page: res.current || 1, pageSize: res.size || 10, itemCount: res.total || 0 }
+  } finally { loading.value = false }
+}
+
+onMounted(load)
+</script>

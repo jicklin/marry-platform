@@ -1,0 +1,47 @@
+package ${packageName}.controller;
+
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.marry.common.base.PageQuery;
+import com.marry.common.core.domain.R;
+import ${packageName}.entity.${className};
+import ${packageName}.service.I${className}Service;
+import lombok.RequiredArgsConstructor;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+@RestController
+@RequestMapping("/${moduleName}/${classNameLower}")
+@RequiredArgsConstructor
+public class ${className}Controller {
+
+    private final I${className}Service service;
+
+    @GetMapping("/list")
+    public R<IPage<${className}>> list(PageQuery q) {
+        return R.ok(service.page(q));
+    }
+
+    @GetMapping("/{id}")
+    public R<${className}> detail(@PathVariable Long id) {
+        return R.ok(service.getById(id));
+    }
+
+    @PostMapping
+    public R<Void> create(@RequestBody ${className} e) {
+        service.save(e);
+        return R.ok();
+    }
+
+    @PutMapping
+    public R<Void> update(@RequestBody ${className} e) {
+        service.updateById(e);
+        return R.ok();
+    }
+
+    @DeleteMapping("/{ids}")
+    public R<Void> remove(@PathVariable List<Long> ids) {
+        service.removeBatchByIds(ids);
+        return R.ok();
+    }
+}

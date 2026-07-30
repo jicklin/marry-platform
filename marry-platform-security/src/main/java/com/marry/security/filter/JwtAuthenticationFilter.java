@@ -24,6 +24,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
+import org.springframework.util.AntPathMatcher;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
@@ -42,6 +43,23 @@ import java.util.List;
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
+    /**
+     * Endpoints that must always bypass JWT validation, even when the request
+     * carries an expired or invalid {@code Authorization} header. Login and
+     * refresh especially need this — a client refreshing an expired access
+     * token should always reach {@code /auth/refresh} with whatever tokens it
+     * has, otherwise the filter would 401 it before the controller can issue a
+     * new pair.
+     */
+    private static final List<String> AUTH_BYPASS_PATTERNS = List.of(
+            "/auth/login",
+            "/auth/refresh",
+            "/auth/captcha",
+            "/auth/logout"
+    );
+
+    private static final AntPathMatcher PATH_MATCHER = new AntPathMatcher();
+
     private final JwtUtil jwtUtil;
     private final JwtProperties jwtProperties;
     private final StringRedisTemplate redisTemplate;
@@ -50,6 +68,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
             throws ServletException, IOException {
+
+        // Auth-flow endpoints are responsible for their own token semantics.
+        // Skip our JWT validation entirely so an expired access token carried
+        // on the request can't 401 the request before the controller decides.
+        String path = stripContextPath(request);
+        if (AUTH_BYPASS_PATTERNS.stream().anyMatch(p -> PATH_MATCHER.match(p, path))) {
+            chain.doFilter(request, response);
+            return;
+        }
+
         String token = resolveToken(request);
         if (StrUtil.isBlank(token)) {
             chain.doFilter(request, response);
@@ -110,6 +138,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         } finally {
             CurrentUserContext.clear();
         }
+    }
+
+    /** Strip the configured context-path (e.g. {@code /api}) so path patterns match. */
+    private static String stripContextPath(HttpServletRequest request) {
+        String path = request.getRequestURI();
+        String ctx = request.getContextPath();
+        if (StrUtil.isNotBlank(ctx) && path.startsWith(ctx)) {
+            path = path.substring(ctx.length());
+        }
+        return path;
     }
 
     private String resolveToken(HttpServletRequest request) {

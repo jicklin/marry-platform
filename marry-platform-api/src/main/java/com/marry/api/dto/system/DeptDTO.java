@@ -2,6 +2,7 @@ package com.marry.api.dto.system;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.PositiveOrZero;
 import lombok.Data;
 
 import java.io.Serial;
@@ -15,6 +16,9 @@ public class DeptDTO implements Serializable {
     private static final long serialVersionUID = 1L;
 
     private Long id;
+
+    /** Top-level dept (parent=0) or an existing parent id. Negative values rejected. */
+    @PositiveOrZero(message = "parentId 必须 ≥ 0")
     private Long parentId;
 
     @NotBlank

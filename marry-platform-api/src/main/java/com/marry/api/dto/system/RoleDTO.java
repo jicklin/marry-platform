@@ -2,6 +2,7 @@ package com.marry.api.dto.system;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 import lombok.Data;
 
 import java.io.Serial;
@@ -20,6 +21,7 @@ public class RoleDTO implements Serializable {
     private String name;
 
     @NotBlank
+    @Pattern(regexp = "^[A-Za-z0-9_]+$", message = "code 仅允许字母、数字、下划线")
     private String code;
 
     @Schema(description = "1 all, 2 dept, 3 dept+sub, 4 self, 5 custom")

@@ -30,18 +30,29 @@ export const useUserStore = defineStore(
   () => {
     const token = ref<string>(getToken())
     const tokenType = ref<string>(getTokenType())
-    const refreshToken = ref<string>(getRefreshToken())
+    // Phase 3: refresh token is delivered via HttpOnly cookie, kept by browser.
+    // We no longer mirror it in store state, but still expose a marker ref so
+    // silentRefresh can distinguish "logged in" from "logged out".
+    const hasRefreshCookie = ref<boolean>(false)
     const userInfo = ref<UserInfo | null>(null)
     const perms = computed<string[]>(() => userInfo.value?.permissions || [])
     const roles = computed<string[]>(() => userInfo.value?.roles || [])
 
-    async function login(form: { username: string; password: string }) {
-      const res: any = await loginApi(form)
+    function applyTokens(res: { accessToken: string; refreshToken?: string }) {
       token.value = res.accessToken
       tokenType.value = 'Bearer'
-      refreshToken.value = res.refreshToken
       setToken(res.accessToken, 'Bearer')
-      setRefreshToken(res.refreshToken)
+      // refreshToken from body is transitional; once cookie is fully adopted,
+      // the LoginVO field can be removed entirely.
+      if (res.refreshToken) {
+        hasRefreshCookie.value = true
+        setRefreshToken(res.refreshToken)
+      }
+    }
+
+    async function login(form: { username: string; password: string }) {
+      const res: any = await loginApi(form)
+      applyTokens(res)
       userInfo.value = res.userInfo
       return res
     }
@@ -53,19 +64,16 @@ export const useUserStore = defineStore(
     }
 
     async function doRefresh() {
-      if (!refreshToken.value) throw new Error('no refresh token')
-      const res: any = await refreshApi(refreshToken.value)
-      token.value = res.accessToken
-      refreshToken.value = res.refreshToken
-      setToken(res.accessToken, 'Bearer')
-      setRefreshToken(res.refreshToken)
+      // No body — refresh token comes from the HttpOnly cookie.
+      const res: any = await refreshApi()
+      applyTokens(res)
       return res
     }
 
     /** Called by axios interceptor; queued requests share one refresh call. */
     let inflight: Promise<any> | null = null
     async function silentRefresh() {
-      if (!refreshToken.value) throw new Error('no refresh token')
+      if (!hasRefreshCookie.value) throw new Error('no refresh session')
       if (!inflight) {
         inflight = doRefresh().finally(() => (inflight = null))
       }
@@ -73,18 +81,27 @@ export const useUserStore = defineStore(
     }
 
     async function logout() {
+      // Fire-and-forget the server logout (best effort — we don't want to
+      // block the UX on network). The HttpOnly refresh-token cookie is
+      // cleared by the server via Set-Cookie header regardless.
       try {
-        await import('@/api/auth').then((m) => m.logout())
+        const { logout: logoutApi } = await import('@/api/auth')
+        await logoutApi()
       } catch (e) {
-        /* ignore */
+        /* ignore — local state is cleared below */
       }
+      // Always clear local state and navigate to login, even if the server
+      // call failed (e.g. token already expired). This guarantees the logout
+      // loop cannot spin forever.
       reset()
-      router.push('/login')
+      if (router.currentRoute.value.path !== '/login') {
+        router.push('/login')
+      }
     }
 
     function reset() {
       token.value = ''
-      refreshToken.value = ''
+      hasRefreshCookie.value = false
       userInfo.value = null
       clearAuth()
     }
@@ -92,7 +109,7 @@ export const useUserStore = defineStore(
     return {
       token,
       tokenType,
-      refreshToken,
+      refreshToken: hasRefreshCookie,
       userInfo,
       perms,
       roles,
@@ -106,7 +123,7 @@ export const useUserStore = defineStore(
   },
   {
     persist: {
-      pick: ['token', 'tokenType', 'refreshToken', 'userInfo']
+      pick: ['token', 'tokenType', 'hasRefreshCookie', 'userInfo']
     }
   }
 )

@@ -7,6 +7,7 @@ import com.marry.common.core.exception.BizException;
 import com.marry.common.security.CurrentUserContext;
 import com.marry.common.security.LoginUser;
 import com.marry.security.properties.JwtProperties;
+import com.marry.security.properties.SecurityProperties;
 import com.marry.security.util.JwtUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jsonwebtoken.Claims;
@@ -44,24 +45,16 @@ import java.util.List;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     /**
-     * Endpoints that must always bypass JWT validation, even when the request
-     * carries an expired or invalid {@code Authorization} header. Login and
-     * refresh especially need this — a client refreshing an expired access
-     * token should always reach {@code /auth/refresh} with whatever tokens it
-     * has, otherwise the filter would 401 it before the controller can issue a
-     * new pair.
+     * Auth-flow endpoints are responsible for their own token semantics —
+     * skipping our JWT filter means an expired access token carried on a
+     * refresh request can't 401 the request before the controller decides.
+     * Patterns are configured via {@code marry.security.auth-bypass}.
      */
-    private static final List<String> AUTH_BYPASS_PATTERNS = List.of(
-            "/auth/login",
-            "/auth/refresh",
-            "/auth/captcha",
-            "/auth/logout"
-    );
-
     private static final AntPathMatcher PATH_MATCHER = new AntPathMatcher();
 
     private final JwtUtil jwtUtil;
     private final JwtProperties jwtProperties;
+    private final SecurityProperties securityProperties;
     private final StringRedisTemplate redisTemplate;
     private final ObjectMapper objectMapper;
 
@@ -69,11 +62,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
             throws ServletException, IOException {
 
-        // Auth-flow endpoints are responsible for their own token semantics.
-        // Skip our JWT validation entirely so an expired access token carried
-        // on the request can't 401 the request before the controller decides.
         String path = stripContextPath(request);
-        if (AUTH_BYPASS_PATTERNS.stream().anyMatch(p -> PATH_MATCHER.match(p, path))) {
+        List<String> bypass = securityProperties.getAuthBypass();
+        if (bypass != null && bypass.stream().anyMatch(p -> PATH_MATCHER.match(p, path))) {
             chain.doFilter(request, response);
             return;
         }

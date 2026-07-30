@@ -21,7 +21,7 @@
     <NCard class="mt-16">
       <NSpace class="mb-12">
         <NButton type="primary" v-auth="'system:user:add'" @click="openEdit()">新增用户</NButton>
-        <NButton type="error" :disabled="!selections.length" @click="batchDelete">批量删除</NButton>
+        <NButton type="error" v-auth="'system:user:remove'" :disabled="!selections.length" @click="batchDelete">批量删除</NButton>
       </NSpace>
       <NDataTable
         :columns="columns"
@@ -118,9 +118,9 @@ const columns = [
     title: '操作', key: 'actions', width: 220, fixed: 'right',
     render(row: any) {
       return h(NSpace, { size: 4 }, () => [
-        h(NButton, { size: 'tiny', quaternary: true, type: 'primary', onClick: () => openEdit(row) }, { default: () => '编辑' }),
-        h(NButton, { size: 'tiny', quaternary: true, type: 'error', onClick: () => removeOne(row) }, { default: () => '删除' }),
-        h(NButton, { size: 'tiny', quaternary: true, onClick: () => resetPwd(row) }, { default: () => '重置密码' })
+        h(NButton, { size: 'tiny', quaternary: true, type: 'primary', vAuth: 'system:user:edit', onClick: () => openEdit(row) }, { default: () => '编辑' }),
+        h(NButton, { size: 'tiny', quaternary: true, type: 'error', vAuth: 'system:user:remove', onClick: () => removeOne(row) }, { default: () => '删除' }),
+        h(NButton, { size: 'tiny', quaternary: true, vAuth: 'system:user:resetPwd', onClick: () => resetPwd(row) }, { default: () => '重置密码' })
       ])
     }
   }

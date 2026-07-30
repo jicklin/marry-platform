@@ -71,7 +71,9 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration cfg = new CorsConfiguration();
-        cfg.setAllowedOriginPatterns(List.of("*"));
+        // Explicit origins — required because allowCredentials=true (Phase 3
+        // refresh-token cookie). Wildcards would silently break the browser.
+        cfg.setAllowedOrigins(securityProperties.getAllowedOrigins());
         cfg.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
         cfg.setAllowedHeaders(List.of("*"));
         cfg.setAllowCredentials(true);

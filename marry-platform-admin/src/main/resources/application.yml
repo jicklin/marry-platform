@@ -60,7 +60,8 @@ management:
   endpoints:
     web:
       exposure:
-        include: health,info,metrics,prometheus,env,loggers
+        # env / loggers 隐藏 — 否则 `marry.jwt.secret` / 整个 application.yml 都会被匿名访问
+        include: health,info,metrics,prometheus
   endpoint:
     health:
       show-details: when-authorized
@@ -77,13 +78,14 @@ logging:
     org.springframework.security: INFO
     com.baomidou.mybatisplus: WARN
   pattern:
-    console: '%clr(%d{HH:mm:ss.SSS}){faint} %clr(%-5p) %clr(${PID:- }){magenta} %clr([%t]){faint} %clr(%-40.40logger{39}){cyan} %clr(:){faint} %m%n'
+    # %X{requestId} comes from com.marry.common.web.RequestIdFilter (MDC).
+    console: '%clr(%d{HH:mm:ss.SSS}){faint} %clr(%-5p) %clr(${PID:- }){magenta} %clr([%X{requestId:--}]){faint} %clr([%t]){faint} %clr(%-40.40logger{39}){cyan} %clr(:){faint} %m%n'
   file:
     name: logs/${spring.application.name}.log
 
 marry:
   jwt:
-    secret: ${JWT_SECRET:replace-me-in-production-with-32-or-more-characters-please}
+    secret: ${JWT_SECRET:ccucZJFr8DXdfzh0nSvUEf1NP2jdyUCR}
     access-ttl: 1800000          # 30 min
     refresh-ttl: 604800000       # 7 days
     header: Authorization
@@ -102,7 +104,8 @@ marry:
       - /swagger-ui/**
       - /swagger-ui.html
       - /favicon.ico
-      - /actuator/**
+      - /actuator/health
+      - /actuator/info
       - /static/**
 
 springdoc:

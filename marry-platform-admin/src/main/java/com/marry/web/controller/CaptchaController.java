@@ -17,7 +17,7 @@ import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
-import java.util.Random;
+import java.security.SecureRandom;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -68,7 +68,7 @@ public class CaptchaController {
     }
 
     private String randomCode(int len) {
-        Random r = new Random();
+        SecureRandom r = new SecureRandom();
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < len; i++) sb.append(r.nextInt(10));
         return sb.toString();
@@ -82,7 +82,7 @@ public class CaptchaController {
         g.fillRect(0, 0, WIDTH, HEIGHT);
 
         // noise dots
-        Random r = new Random();
+        SecureRandom r = new SecureRandom();
         for (int i = 0; i < 50; i++) {
             g.setColor(new Color(r.nextInt(255), r.nextInt(255), r.nextInt(255), 120));
             g.fillRect(r.nextInt(WIDTH), r.nextInt(HEIGHT), 1, 1);

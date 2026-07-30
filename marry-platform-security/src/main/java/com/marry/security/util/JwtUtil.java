@@ -6,7 +6,9 @@ import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
@@ -27,11 +29,23 @@ import java.util.UUID;
  *   <li>jti = random uuid (used for refresh-token rotation and blacklist)</li>
  * </ul>
  */
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class JwtUtil {
 
     private final JwtProperties props;
+
+    @PostConstruct
+    void validateSecret() {
+        String s = props.getSecret();
+        if (s == null || s.length() < 32 || s.contains("replace-me")) {
+            throw new IllegalStateException(
+                    "marry.jwt.secret is missing, too short, or still set to the placeholder. " +
+                    "Provide at least 32 random characters via JWT_SECRET env var."
+            );
+        }
+    }
 
     private SecretKey key() {
         return Keys.hmacShaKeyFor(props.getSecret().getBytes(StandardCharsets.UTF_8));

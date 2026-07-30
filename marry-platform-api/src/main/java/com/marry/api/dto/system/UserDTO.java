@@ -24,11 +24,13 @@ public class UserDTO implements Serializable {
     private String username;
 
     @Schema(description = "Password (required on create)")
+    @Size(min = 8, max = 64, message = "密码长度需 8-64 字符")
     private String password;
 
     private String nickName;
 
     @Email
+    @Size(max = 64, message = "邮箱长度最多 64 字符")
     private String email;
 
     private String phone;

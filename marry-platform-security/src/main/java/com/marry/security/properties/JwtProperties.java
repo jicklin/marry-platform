@@ -11,7 +11,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 public class JwtProperties {
 
     /** Secret used to sign/verify tokens. Must be at least 32 chars. */
-    private String secret = "please-replace-me-with-a-32-or-more-character-secret-key";
+    private String secret = "ccucZJFr8DXdfzh0nSvUEf1NP2jdyUCR";
 
     /** Access-token TTL in milliseconds (default 30 minutes). */
     private long accessTtl = 30 * 60 * 1000L;

@@ -11,8 +11,11 @@ export function login(data: LoginReq) {
   return request.post('/auth/login', data)
 }
 
-export function refresh(refreshToken: string) {
-  return request.post('/auth/refresh', { refreshToken })
+export function refresh() {
+  // Phase 3: refresh token comes from HttpOnly cookie; backend reads it via
+  // @CookieValue. Sending a body field is kept as a transitional fallback
+  // for one release.
+  return request.post('/auth/refresh', {})
 }
 
 export function logout() {

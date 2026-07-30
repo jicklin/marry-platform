@@ -2,6 +2,7 @@ package com.marry.api.dto.system;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 import lombok.Data;
 
 import java.io.Serial;
@@ -21,13 +22,20 @@ public class MenuDTO implements Serializable {
     @NotBlank
     private String name;
 
-    @Schema(description = "M directory, C menu, F button")
+    @NotBlank
+    @Pattern(regexp = "^[CMF]$", message = "menuType 仅允许 C / M / F")
     private String menuType;
 
     private String path;
 
     private String component;
 
+    /**
+     * Permission key in {@code module:resource:action} form, e.g. {@code system:user:add}.
+     * Optional for M / directory entries.
+     */
+    @Pattern(regexp = "^[a-z][a-zA-Z0-9]*(:[a-zA-Z0-9]+){1,2}$",
+            message = "perm 格式：module 或 module:resource 或 module:resource:action")
     private String perm;
 
     private String icon;

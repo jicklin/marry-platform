@@ -19,10 +19,10 @@
 .big-text {
   font-size: 96px;
   font-weight: 700;
-  color: #2d8cf0;
+  color: var(--n-primary-color, #2d8cf0);
 }
 .sub {
-  color: #909399;
+  color: var(--fg-muted, #909399);
   margin-bottom: 16px;
 }
 </style>

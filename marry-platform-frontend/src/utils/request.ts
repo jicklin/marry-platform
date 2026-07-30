@@ -13,7 +13,9 @@ const baseURL = import.meta.env.VITE_API_BASE || '/api'
 const service: AxiosInstance = axios.create({
   baseURL,
   timeout: 30000,
-  withCredentials: false
+  // Phase 3: refresh token is delivered as an HttpOnly cookie, so we need to
+  // include credentials on every request.
+  withCredentials: true
 })
 
 service.interceptors.request.use(
@@ -36,6 +38,15 @@ function flushQueue(token: string | null) {
   pendingQueue = []
 }
 
+/**
+ * Auth-flow endpoints (login/refresh/logout/etc.) must never trigger
+ * silentRefresh — a refresh loop on /auth/logout would keep the user
+ * seemingly "logged in" forever. These endpoints manage their own state.
+ */
+function isAuthFlowEndpoint(url: string = ''): boolean {
+  return /\/auth\/(login|refresh|logout|captcha)\b/.test(url)
+}
+
 service.interceptors.response.use(
   async (response: AxiosResponse) => {
     endLoading()
@@ -43,8 +54,11 @@ service.interceptors.response.use(
     if (res && typeof res === 'object' && 'code' in res) {
       if (res.code === 0) return res.data
 
-      // 401 → try refresh once, then retry
+      // 401 → try refresh once, then retry (skip for auth-flow endpoints)
       if (res.code === 401) {
+        if (isAuthFlowEndpoint(response.config?.url)) {
+          return Promise.reject(new Error(res.msg || '认证失败'))
+        }
         const retried = await tryRefresh()
         if (retried) {
           // Retry the original request
@@ -67,6 +81,11 @@ service.interceptors.response.use(
   async (error) => {
     endLoading()
     if (error.response?.status === 401) {
+      if (isAuthFlowEndpoint(error.config?.url)) {
+        // Don't trigger refresh on auth-flow endpoints — let the caller's
+        // catch (e.g. user.ts logout()) decide what to do.
+        return Promise.reject(error)
+      }
       const retried = await tryRefresh()
       if (retried) {
         const cfg = error.config as InternalAxiosRequestConfig & { _retried?: boolean }

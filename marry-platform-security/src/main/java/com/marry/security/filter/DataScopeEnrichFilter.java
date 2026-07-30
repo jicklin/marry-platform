@@ -4,7 +4,7 @@ import com.marry.common.security.DataScopeContext;
 import com.marry.persistence.mapper.SysRoleDeptMapper;
 import com.marry.persistence.mapper.SysRoleMapper;
 import com.marry.persistence.mapper.SysUserMapper;
-import com.marry.security.model.LoginUser;
+import com.marry.common.security.LoginUser;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

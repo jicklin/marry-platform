@@ -20,13 +20,13 @@ public abstract class BaseEntity implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @TableField(value = "create_by", fill = FieldFill.INSERT)
-    private String createBy;
+    private Long createBy;
 
     @TableField(value = "create_time", fill = FieldFill.INSERT)
     private LocalDateTime createTime;
 
     @TableField(value = "update_by", fill = FieldFill.INSERT_UPDATE)
-    private String updateBy;
+    private Long updateBy;
 
     @TableField(value = "update_time", fill = FieldFill.INSERT_UPDATE)
     private LocalDateTime updateTime;

@@ -3,6 +3,10 @@ import request from '@/utils/request'
 export function pageUsers(params: any) {
   return request.get('/system/user/list', { params })
 }
+/** User detail incl. roleIds — used by the edit dialog to pre-select roles. */
+export function getUserDetail(id: number) {
+  return request.get(`/system/user/${id}`)
+}
 export function createUser(data: any) {
   return request.post('/system/user', data)
 }

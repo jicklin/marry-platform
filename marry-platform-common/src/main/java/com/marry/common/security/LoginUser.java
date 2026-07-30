@@ -1,4 +1,4 @@
-package com.marry.security.model;
+package com.marry.common.security;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -9,7 +9,13 @@ import java.io.Serializable;
 import java.util.List;
 
 /**
- * Lightweight authenticated user representation carried in {@link org.springframework.security.core.Authentication#getPrincipal()}.
+ * Lightweight authenticated-user representation. Carried in Spring Security's
+ * {@code Authentication#getPrincipal()} and read by downstream code (MyBatis-Plus
+ * audit fill, DataScope interceptor, etc.).
+ *
+ * <p>Lives in {@code common} so that both the security module (which writes it)
+ * and the persistence module (which reads it via {@code MetaObjectHandler})
+ * can depend on it without forming a module cycle.</p>
  */
 @Data
 @NoArgsConstructor

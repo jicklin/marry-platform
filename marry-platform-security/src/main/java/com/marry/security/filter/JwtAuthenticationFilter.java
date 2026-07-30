@@ -4,7 +4,8 @@ import cn.hutool.core.util.StrUtil;
 import com.marry.common.core.domain.BizCode;
 import com.marry.common.core.domain.R;
 import com.marry.common.core.exception.BizException;
-import com.marry.security.model.LoginUser;
+import com.marry.common.security.CurrentUserContext;
+import com.marry.common.security.LoginUser;
 import com.marry.security.properties.JwtProperties;
 import com.marry.security.util.JwtUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -86,6 +87,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     perms.stream().map(SimpleGrantedAuthority::new).toList());
             auth.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
             SecurityContextHolder.getContext().setAuthentication(auth);
+            // Mirror the user id into a common-classpath ThreadLocal so that
+            // modules without a security dependency (e.g. MybatisPlusConfig in
+            // the persistence module) can still read it without forming a
+            // module cycle.
+            CurrentUserContext.set(loginUser.getUserId());
 
         } catch (ExpiredJwtException e) {
             writeUnauthorized(response, "令牌已过期");
@@ -99,7 +105,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             return;
         }
 
-        chain.doFilter(request, response);
+        try {
+            chain.doFilter(request, response);
+        } finally {
+            CurrentUserContext.clear();
+        }
     }
 
     private String resolveToken(HttpServletRequest request) {

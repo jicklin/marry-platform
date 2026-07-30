@@ -5,6 +5,7 @@ import axios, {
 } from 'axios'
 import { useUserStore } from '@/stores/user'
 import { useAppStore } from '@/stores/app'
+import router from '@/router'
 import { message, loadingBar } from '@/utils/feedback'
 
 const baseURL = import.meta.env.VITE_API_BASE || '/api'
@@ -107,11 +108,29 @@ function handleUnauthorized(msg: string) {
   const appStore = useAppStore()
   userStore.reset()
   appStore.clearCache()
-  if (location.hash !== '#/login') {
-    message.warning(msg)
-    location.hash = '#/login'
-  }
+
+  // Skip if we already landed on (or are en route to) the login page.
+  const here = router.currentRoute.value.fullPath
+  if (here.startsWith('/login')) return
+
+  // Idempotency: ignore subsequent 401s while a redirect is in flight so we
+  // don't fire multiple message.warning toasts or races on router.push.
+  if (redirecting) return
+  redirecting = true
+
+  // Capture the current location so after login the user returns to where
+  // they were (excluding the auth endpoints themselves).
+  const target = here.startsWith('/login') ? '/' : here
+  const redirect = encodeURIComponent(target)
+  message.warning(msg)
+  // Use router.push (not location.hash=...) so Vue Router reliably picks up
+  // the navigation even when we are inside an async error interceptor.
+  router.push(`/login?redirect=${redirect}`).finally(() => {
+    redirecting = false
+  })
 }
+
+let redirecting = false
 
 let loadingCount = 0
 function startLoading() {

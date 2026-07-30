@@ -1,6 +1,7 @@
 package com.marry.domain.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.marry.common.base.BaseEntity;
@@ -9,6 +10,7 @@ import lombok.EqualsAndHashCode;
 
 import java.io.Serial;
 import java.time.LocalDateTime;
+import java.util.List;
 
 /**
  * System user account.
@@ -49,4 +51,12 @@ public class SysUser extends BaseEntity {
     private LocalDateTime loginDate;
 
     private String remark;
+
+    /**
+     * Role ids assigned to this user. Not a database column — populated by
+     * service layer for the user-detail endpoint so the frontend can
+     * pre-select roles in the edit dialog.
+     */
+    @TableField(exist = false)
+    private List<Long> roleIds;
 }

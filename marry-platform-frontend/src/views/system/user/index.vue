@@ -76,7 +76,7 @@ import {
   NCard, NForm, NFormItem, NInput, NSelect, NButton, NSpace, NDataTable, NModal, NSwitch,
   useDialog, useMessage, NTag
 } from 'naive-ui'
-import { pageUsers, createUser, updateUser, deleteUsers } from '@/api/system/user'
+import { pageUsers, getUserDetail, createUser, updateUser, deleteUsers } from '@/api/system/user'
 import { listAllRoles } from '@/api/system/role'
 
 const dialog = useDialog()
@@ -157,15 +157,32 @@ const statusSwitch = ref(true)
 
 watch(statusSwitch, (v) => { editForm.value.status = v ? 1 : 0 })
 
-function openEdit(row?: any) {
+async function openEdit(row?: any) {
   if (row) {
+    // List rows don't carry roleIds; fetch the detail endpoint so the role
+    // <n-select multiple> can pre-select this user's currently-assigned roles.
     editForm.value = { ...row, password: '', roleIds: [] }
     statusSwitch.value = row.status === 1
+    editVisible.value = true
+    try {
+      const detail: any = await getUserDetail(row.id)
+      editForm.value = {
+        ...editForm.value,
+        username: detail.username ?? row.username,
+        nickName: detail.nickName ?? row.nickName,
+        email: detail.email ?? row.email,
+        phone: detail.phone ?? row.phone,
+        deptId: detail.deptId ?? row.deptId,
+        roleIds: Array.isArray(detail.roleIds) ? detail.roleIds : []
+      }
+    } catch (e) {
+      // ignore: dialog stays open with empty roleIds; user can still pick again
+    }
   } else {
     editForm.value = { id: null, username: '', nickName: '', password: 'admin123', email: '', phone: '', roleIds: [], status: 1 }
     statusSwitch.value = true
+    editVisible.value = true
   }
-  editVisible.value = true
 }
 
 import { watch } from 'vue'

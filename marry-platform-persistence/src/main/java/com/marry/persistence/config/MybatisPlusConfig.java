@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.extension.plugins.MybatisPlusInterceptor;
 import com.baomidou.mybatisplus.extension.plugins.inner.BlockAttackInnerInterceptor;
 import com.baomidou.mybatisplus.extension.plugins.inner.OptimisticLockerInnerInterceptor;
 import com.baomidou.mybatisplus.extension.plugins.inner.PaginationInnerInterceptor;
+import com.marry.common.security.CurrentUserContext;
 import org.apache.ibatis.reflection.MetaObject;
 import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.context.annotation.Bean;
@@ -37,6 +38,9 @@ public class MybatisPlusConfig {
             @Override
             public void insertFill(MetaObject metaObject) {
                 LocalDateTime now = LocalDateTime.now();
+                long userId = CurrentUserContext.currentUserIdOrSystem();
+                this.strictInsertFill(metaObject, "createBy", Long.class, userId);
+                this.strictInsertFill(metaObject, "updateBy", Long.class, userId);
                 this.strictInsertFill(metaObject, "createTime", LocalDateTime.class, now);
                 this.strictInsertFill(metaObject, "updateTime", LocalDateTime.class, now);
                 this.strictInsertFill(metaObject, "operTime", LocalDateTime.class, now);
@@ -46,7 +50,10 @@ public class MybatisPlusConfig {
 
             @Override
             public void updateFill(MetaObject metaObject) {
-                this.strictUpdateFill(metaObject, "updateTime", LocalDateTime.class, LocalDateTime.now());
+                LocalDateTime now = LocalDateTime.now();
+                long userId = CurrentUserContext.currentUserIdOrSystem();
+                this.strictUpdateFill(metaObject, "updateBy", Long.class, userId);
+                this.strictUpdateFill(metaObject, "updateTime", LocalDateTime.class, now);
             }
         };
     }

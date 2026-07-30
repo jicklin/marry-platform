@@ -77,7 +77,7 @@ public class UserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impleme
     public SysUser getByIdWithRoles(Long id) {
         SysUser user = baseMapper.selectById(id);
         if (user == null) return null;
-        user.setRemark(user.getRemark()); // placeholder; populate roles if needed
+        user.setRoleIds(roleIdsOf(id));
         return user;
     }
 

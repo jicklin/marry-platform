@@ -6,7 +6,7 @@ import com.marry.common.util.IpUtils;
 import com.marry.domain.entity.SysOperLog;
 import com.marry.log.annotation.Log;
 import com.marry.log.service.OperLogService;
-import com.marry.security.model.LoginUser;
+import com.marry.common.security.LoginUser;
 import com.marry.security.util.SecurityUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;

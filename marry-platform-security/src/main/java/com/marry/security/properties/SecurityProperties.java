@@ -25,7 +25,6 @@ public class SecurityProperties {
             "/swagger-ui/**",
             "/swagger-ui.html",
             "/favicon.ico",
-            "/druid/**",
             "/actuator/health",
             "/actuator/info"
     ));

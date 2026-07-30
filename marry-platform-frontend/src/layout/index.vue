@@ -153,7 +153,7 @@ async function handleLogout() {
   gap: 8px;
   height: 56px;
   padding: 0 16px;
-  border-bottom: 1px solid #ebeef5;
+  border-bottom: 1px solid var(--border-soft);
   font-weight: 700;
   letter-spacing: -0.5px;
 }
@@ -191,18 +191,19 @@ async function handleLogout() {
 }
 
 .user-info:hover {
-  background-color: #f5f7fa;
+  background-color: var(--bg-hover);
 }
 
 .user-name {
   font-size: 14px;
-  color: #303133;
+  color: var(--fg-default);
 }
 
 .main-content {
   padding: 16px;
-  background-color: #f5f7fa;
+  background-color: var(--bg-main);
   overflow: auto;
+  transition: background-color 0.2s ease;
 }
 
 .fade-slide-enter-active,

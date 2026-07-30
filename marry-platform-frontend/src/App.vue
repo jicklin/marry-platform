@@ -18,11 +18,16 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, watchEffect } from 'vue'
 import { darkTheme, zhCN, dateZhCN } from 'naive-ui'
 import { useAppStore } from '@/stores/app'
 
 const appStore = useAppStore()
+
+// Mirror dark state to <html class="dark"> so global.scss can switch CSS vars.
+watchEffect(() => {
+  document.documentElement.classList.toggle('dark', appStore.dark)
+})
 
 const themeOverrides = computed(() => ({
   common: {
@@ -30,8 +35,8 @@ const themeOverrides = computed(() => ({
     primaryColorHover: '#57a3f3',
     primaryColorPressed: '#2379d4',
     primaryColorSuppl: '#2d8cf0',
-    bodyColor: '#f5f7fa',
-    cardColor: '#ffffff',
+    // bodyColor / cardColor intentionally NOT overridden — let darkTheme
+    // and global.scss CSS variables drive them per mode.
     borderRadius: '6px',
     fontSize: '14px',
     heightMedium: '36px'

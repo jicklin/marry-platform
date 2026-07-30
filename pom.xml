@@ -39,7 +39,6 @@
 
         <mybatis-plus.version>3.5.9</mybatis-plus.version>
         <jjwt.version>0.12.6</jjwt.version>
-        <druid.version>1.2.24</druid.version>
         <knife4j.version>4.5.0</knife4j.version>
         <redisson.version>3.36.0</redisson.version>
         <mapstruct.version>1.5.5.Final</mapstruct.version>
@@ -144,11 +143,6 @@
                 <artifactId>jjwt-jackson</artifactId>
                 <version>${jjwt.version}</version>
                 <scope>runtime</scope>
-            </dependency>
-            <dependency>
-                <groupId>com.alibaba</groupId>
-                <artifactId>druid-spring-boot-3-starter</artifactId>
-                <version>${druid.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.github.xiaoymin</groupId>

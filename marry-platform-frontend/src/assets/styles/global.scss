@@ -1,44 +1,66 @@
 :root {
-  // Hint the browser to render form controls / scrollbars in light style.
   color-scheme: light;
-  --bg-body: #f5f7fa;
+  --primary-color: #6366f1;
+  --primary-hover: #4f46e5;
+  --primary-light: #e0e7ff;
+  --primary-gradient: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  --accent-gradient: linear-gradient(135deg, #3b82f6 0%, #6366f1 50%, #8b5cf6 100%);
+
+  --bg-body: #f8fafc;
   --bg-card: #ffffff;
-  --bg-search: #fff;
-  --bg-page-header: #fff;
-  --bg-main: #f5f7fa;
-  --bg-hover: #f5f7fa;
+  --bg-search: #ffffff;
+  --bg-page-header: rgba(255, 255, 255, 0.85);
+  --bg-main: #f8fafc;
+  --bg-hover: #f1f5f9;
   --bg-toolbar: #ffffff;
-  --fg-title: #303133;
-  --fg-default: #303133;
-  --fg-muted: #909399;
-  --border-soft: #ebeef5;
-  --border-default: #dcdfe6;
-  --shadow-soft: 0 1px 4px rgba(0, 21, 41, 0.04);
-  --scrollbar-thumb: #c0c4cc;
-  --scrollbar-track: #f5f7fa;
+  
+  --fg-title: #0f172a;
+  --fg-default: #334155;
+  --fg-muted: #64748b;
+  
+  --border-soft: #f1f5f9;
+  --border-default: #e2e8f0;
+  
+  --shadow-soft: 0 4px 20px -2px rgba(15, 23, 42, 0.05), 0 2px 6px -1px rgba(15, 23, 42, 0.03);
+  --shadow-medium: 0 10px 25px -5px rgba(15, 23, 42, 0.08), 0 4px 10px -2px rgba(15, 23, 42, 0.04);
+  --shadow-glow: 0 0 20px -3px rgba(99, 102, 241, 0.25);
+  
+  --scrollbar-thumb: #cbd5e1;
+  --scrollbar-track: #f8fafc;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
 }
 
-// Dark mode overrides. Toggled by App.vue via `html.dark` class.
 html.dark {
   color-scheme: dark;
-  --bg-body: #18181c;
-  --bg-card: #23232a;
-  --bg-search: #2b2b33;
-  --bg-page-header: #2b2b33;
-  --bg-main: #18181c;
-  --bg-hover: #2b2b33;
-  --bg-toolbar: #2b2b33;
-  // Brightened to give readable contrast — earlier #e6e6e6 / #d8d8de read as
-  // muddy grey on the dark body. The clearer palette matches what Tailwind /
-  // shadcn-style dark themes ship by default.
-  --fg-title: #ffffff;
-  --fg-default: #ededf0;
-  --fg-muted: #a8a8b2;
-  --border-soft: #2f2f37;
-  --border-default: #3a3a44;
-  --shadow-soft: 0 1px 4px rgba(0, 0, 0, 0.32);
-  --scrollbar-thumb: #4a4a55;
-  --scrollbar-track: #1c1c22;
+  --primary-color: #818cf8;
+  --primary-hover: #6366f1;
+  --primary-light: rgba(99, 102, 241, 0.2);
+  --primary-gradient: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+  --accent-gradient: linear-gradient(135deg, #60a5fa 0%, #818cf8 50%, #c084fc 100%);
+
+  --bg-body: #090d16;
+  --bg-card: #111827;
+  --bg-search: #111827;
+  --bg-page-header: rgba(17, 24, 39, 0.85);
+  --bg-main: #090d16;
+  --bg-hover: #1e293b;
+  --bg-toolbar: #111827;
+
+  --fg-title: #f8fafc;
+  --fg-default: #e2e8f0;
+  --fg-muted: #94a3b8;
+
+  --border-soft: rgba(255, 255, 255, 0.07);
+  --border-default: rgba(255, 255, 255, 0.12);
+
+  --shadow-soft: 0 4px 20px -2px rgba(0, 0, 0, 0.4);
+  --shadow-medium: 0 10px 30px -5px rgba(0, 0, 0, 0.6);
+  --shadow-glow: 0 0 25px -2px rgba(129, 140, 248, 0.3);
+
+  --scrollbar-thumb: #334155;
+  --scrollbar-track: #0f172a;
 }
 
 html,
@@ -49,15 +71,13 @@ body,
   padding: 0;
 }
 
-// No transition on body bg / color: var-driven elements flip the moment
-// <html class="dark"> toggles, so any transition here leaves body temporarily
-// mid-grey (looking like a faded overlay over already-dark content).
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC',
+  font-family: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'PingFang SC',
     'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
   background-color: var(--bg-body);
-  color: var(--fg-title);
+  color: var(--fg-default);
 }
 
 * {
@@ -67,6 +87,33 @@ body {
 a {
   color: inherit;
   text-decoration: none;
+}
+
+/* Modern Utilities */
+.gradient-text {
+  background: var(--primary-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.glass-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-soft);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.hover-lift {
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform, box-shadow;
+}
+
+.hover-lift:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-medium);
 }
 
 .text-muted {
@@ -87,81 +134,81 @@ a {
   justify-content: center;
 }
 
-.gap-8 {
-  gap: 8px;
-}
+.gap-8 { gap: 8px; }
+.gap-12 { gap: 12px; }
+.gap-16 { gap: 16px; }
 
-.gap-12 {
-  gap: 12px;
-}
+.mt-8 { margin-top: 8px; }
+.mt-12 { margin-top: 12px; }
+.mt-16 { margin-top: 16px; }
+.mt-20 { margin-top: 20px; }
 
-.gap-16 {
-  gap: 16px;
-}
-
-.mt-12 {
-  margin-top: 12px;
-}
-
-.mt-16 {
-  margin-top: 16px;
-}
-
-.mb-12 {
-  margin-bottom: 12px;
-}
-
-.mb-16 {
-  margin-bottom: 16px;
-}
+.mb-8 { margin-bottom: 8px; }
+.mb-12 { margin-bottom: 12px; }
+.mb-16 { margin-bottom: 16px; }
 
 .page-container {
-  padding: 16px;
+  padding: 20px;
+  max-width: 1600px;
+  margin: 0 auto;
 }
 
 .search-form {
   background-color: var(--bg-search);
-  padding: 16px 16px 0;
-  border-radius: 6px;
+  padding: 20px;
+  border-radius: var(--radius-md);
   margin-bottom: 16px;
+  border: 1px solid var(--border-soft);
   box-shadow: var(--shadow-soft);
 }
 
 .table-card {
   background-color: var(--bg-card);
-  padding: 16px;
-  border-radius: 6px;
+  padding: 20px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-soft);
   box-shadow: var(--shadow-soft);
 }
 
 .page-header {
   background-color: var(--bg-page-header);
-  padding: 12px 16px;
-  margin-bottom: 12px;
-  border-radius: 6px;
+  padding: 16px 20px;
+  margin-bottom: 16px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-soft);
   box-shadow: var(--shadow-soft);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
 .page-header-title {
-  font-size: 16px;
-  font-weight: 600;
+  font-size: 18px;
+  font-weight: 700;
   color: var(--fg-title);
+  letter-spacing: -0.3px;
 }
 
-.page-header-breadcrumb {
-  margin-top: 4px;
+.page-header-subtitle {
+  font-size: 13px;
+  color: var(--fg-muted);
+  margin-top: 2px;
 }
 
+/* Custom Scrollbars */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
 }
 
 ::-webkit-scrollbar-thumb {
   background-color: var(--scrollbar-thumb);
-  border-radius: 4px;
+  border-radius: 99px;
 }
 
 ::-webkit-scrollbar-track {
-  background-color: var(--scrollbar-track);
+  background-color: transparent;
 }
+

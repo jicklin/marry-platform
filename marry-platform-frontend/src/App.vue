@@ -66,26 +66,26 @@ const themeOverrides = computed(() => {
 
   return {
     common: {
-      primaryColor: '#2d8cf0',
-      primaryColorHover: '#57a3ff',
-      primaryColorPressed: '#2379d4',
-      primaryColorSuppl: '#2d8cf0',
-      // bodyColor / cardColor intentionally NOT overridden — let darkTheme
-      // and global.scss CSS variables drive them per mode.
-      borderRadius: '6px',
+      primaryColor: appStore.dark ? '#818cf8' : '#6366f1',
+      primaryColorHover: appStore.dark ? '#a5b4fc' : '#4f46e5',
+      primaryColorPressed: appStore.dark ? '#6366f1' : '#4338ca',
+      primaryColorSuppl: appStore.dark ? '#818cf8' : '#6366f1',
+      borderRadius: '10px',
+      borderRadiusSmall: '6px',
       fontSize: '14px',
-      heightMedium: '36px',
+      heightMedium: '38px',
       ...text
     },
     Button: {
-      textColorPrimary: '#ffffff'
-    },
-    Menu: {
-      itemHeight: '42px'
+      textColorPrimary: '#ffffff',
+      fontWeight: '600',
+      borderRadiusMedium: '8px'
     },
     Card: {
       paddingMedium: '20px',
-      titleTextColor: text.cardTitleTextColor
+      borderRadius: '14px',
+      titleTextColor: text.cardTitleTextColor,
+      titleFontWeight: '600'
     },
     Breadcrumb: {
       itemTextColor: text.breadcrumbItemColor,

@@ -46,7 +46,7 @@ const columns = [
   { title: '类型', key: 'configType', width: 90 },
   { title: '备注', key: 'remark', minWidth: 140 },
   {
-    title: '操作', key: 'a', width: 160, fixed: 'right',
+    title: '操作', key: 'a', width: 160, fixed: 'right' as const,
     render(row: any) {
       return h(NSpace, { size: 4 }, () => [
         h(NButton, { size: 'tiny', quaternary: true, type: 'primary', onClick: () => openEdit(row) }, { default: () => '编辑' }),

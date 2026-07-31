@@ -8,7 +8,8 @@
     "types": ["vite/client", "node"],
     "strict": false,
     "noImplicitAny": false,
-    "verbatimModuleSyntax": false
+    "verbatimModuleSyntax": false,
+    "skipLibCheck": true
   },
   "include": [
     "src/**/*.ts",

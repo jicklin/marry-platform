@@ -8,8 +8,6 @@ export {}
 declare module 'vue' {
   export interface GlobalComponents {
     NAvatar: typeof import('naive-ui')['NAvatar']
-    NBreadcrumb: typeof import('naive-ui')['NBreadcrumb']
-    NBreadcrumbItem: typeof import('naive-ui')['NBreadcrumbItem']
     NButton: typeof import('naive-ui')['NButton']
     NCard: typeof import('naive-ui')['NCard']
     NConfigProvider: typeof import('naive-ui')['NConfigProvider']
@@ -25,9 +23,7 @@ declare module 'vue' {
     NMenu: typeof import('naive-ui')['NMenu']
     NMessageProvider: typeof import('naive-ui')['NMessageProvider']
     NNotificationProvider: typeof import('naive-ui')['NNotificationProvider']
-    NPopover: typeof import('naive-ui')['NPopover']
-    NSpace: typeof import('naive-ui')['NSpace']
-    NStatistic: typeof import('naive-ui')['NStatistic']
+    NTag: typeof import('naive-ui')['NTag']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
   }

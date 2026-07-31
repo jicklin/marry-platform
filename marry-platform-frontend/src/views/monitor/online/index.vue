@@ -21,7 +21,7 @@ const columns = [
   { title: '用户名', key: 'username', minWidth: 160 },
   { title: 'Token 剩余(s)', key: 'ttlSeconds', width: 160 },
   {
-    title: '操作', key: 'a', width: 140, fixed: 'right',
+    title: '操作', key: 'a', width: 140, fixed: 'right' as const,
     render(row: any) {
       return h(NButton, { size: 'tiny', type: 'error', quaternary: true, onClick: () => handleForce(row) }, { default: () => '强制下线' })
     }

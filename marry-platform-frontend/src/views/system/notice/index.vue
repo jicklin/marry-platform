@@ -50,8 +50,8 @@ const columns = [
   {
     title: '类型', key: 'type', width: 100,
     render(row: any) {
-      const t = row.type === 'announcement' ? 'announcement' : 'info'
-      return h(NTag, { type: t, size: 'small' }, { default: () => (row.type === 'announcement' ? '公告' : '通知') })
+      const tagType = row.type === 'announcement' ? 'warning' : 'info'
+      return h(NTag, { type: tagType, size: 'small' }, { default: () => (row.type === 'announcement' ? '公告' : '通知') })
     }
   },
   {
@@ -62,7 +62,7 @@ const columns = [
   },
   { title: '创建时间', key: 'createTime', minWidth: 180 },
   {
-    title: '操作', key: 'a', width: 160, fixed: 'right',
+    title: '操作', key: 'a', width: 160, fixed: 'right' as const,
     render(row: any) {
       return h(NSpace, { size: 4 }, () => [
         h(NButton, { size: 'tiny', quaternary: true, type: 'primary', onClick: () => openEdit(row) }, { default: () => '编辑' }),

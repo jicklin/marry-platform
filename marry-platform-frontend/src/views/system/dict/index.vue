@@ -75,7 +75,7 @@ const typeCols = [
   { title: '编码', key: 'type', minWidth: 160 },
   { title: '备注', key: 'remark', minWidth: 160 },
   {
-    title: '操作', key: 'a', width: 160, fixed: 'right',
+    title: '操作', key: 'a', width: 160, fixed: 'right' as const,
     render(row: any) {
       return h(NSpace, { size: 4 }, () => [
         h(NButton, { size: 'tiny', quaternary: true, type: 'primary', onClick: () => openTypeEdit(row) }, { default: () => '编辑' }),
@@ -141,7 +141,7 @@ const dataCols = [
     }
   },
   {
-    title: '操作', key: 'a', width: 160, fixed: 'right',
+    title: '操作', key: 'a', width: 160, fixed: 'right' as const,
     render(row: any) {
       return h(NSpace, { size: 4 }, () => [
         h(NButton, { size: 'tiny', quaternary: true, type: 'primary', onClick: () => openDataEdit(row) }, { default: () => '编辑' }),

@@ -1,4 +1,4 @@
-import { createRouter, createWebHistory } from 'vue-router'
+import { createRouter, createWebHistory, type RouteRecordRaw } from 'vue-router'
 
 import Layout from '@/layout/index.vue'
 
@@ -6,7 +6,7 @@ const Login = () => import('@/views/login/index.vue')
 const NotFound = () => import('@/views/error/404.vue')
 const Dashboard = () => import('@/views/dashboard/index.vue')
 
-const staticRoutes = [
+const staticRoutes: RouteRecordRaw[] = [
   { path: '/login', name: 'Login', component: Login, meta: { title: '登录' } },
   { path: '/404', name: 'NotFound', component: NotFound, meta: { title: '404' } },
   // Register the root Layout statically so `/` always resolves, even

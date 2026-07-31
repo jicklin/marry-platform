@@ -1,28 +1,55 @@
 <template>
   <div class="page-container">
     <div class="page-header">
-      <div class="page-header-title">用户管理</div>
+      <div>
+        <div class="page-header-title">用户管理</div>
+        <div class="page-header-subtitle">管理系统中的所有用户账户、部门归属与角色分配</div>
+      </div>
+      <NSpace>
+        <NButton type="primary" v-auth="'system:user:add'" @click="openEdit()">
+          <template #icon><NIcon><AddOutline /></NIcon></template>
+          新增用户
+        </NButton>
+      </NSpace>
     </div>
-    <NCard>
-      <NForm inline :model="query" label-placement="left" label-width="80">
+
+    <NCard class="search-form glass-card">
+      <NForm inline :model="query" label-placement="left" label-width="70">
         <NFormItem label="用户名">
-          <NInput v-model:value="query.username" placeholder="请输入" clearable />
+          <NInput v-model:value="query.username" placeholder="请输入用户名" clearable style="width: 200px" />
         </NFormItem>
         <NFormItem label="状态">
           <NSelect v-model:value="query.status" :options="statusOpts" clearable style="width: 140px" />
         </NFormItem>
         <NFormItem>
-          <NButton type="primary" @click="load(1)">搜索</NButton>
-          <NButton class="ml-8" @click="reset">重置</NButton>
+          <NSpace>
+            <NButton type="primary" @click="load(1)">
+              <template #icon><NIcon><SearchOutline /></NIcon></template>
+              搜索
+            </NButton>
+            <NButton @click="reset">
+              <template #icon><NIcon><RefreshOutline /></NIcon></template>
+              重置
+            </NButton>
+          </NSpace>
         </NFormItem>
       </NForm>
     </NCard>
 
-    <NCard class="mt-16">
-      <NSpace class="mb-12">
-        <NButton type="primary" v-auth="'system:user:add'" @click="openEdit()">新增用户</NButton>
-        <NButton type="error" v-auth="'system:user:remove'" :disabled="!selections.length" @click="batchDelete">批量删除</NButton>
+    <NCard class="table-card glass-card mt-16">
+      <NSpace class="mb-16" justify="space-between">
+        <NSpace align="center">
+          <span class="table-title">用户列表</span>
+          <NTag size="small" round type="info">共 {{ total }} 条记录</NTag>
+        </NSpace>
+        <NSpace>
+          <NButton type="error" quaternary v-auth="'system:user:remove'" :disabled="!selections.length" @click="batchDelete">
+            <template #icon><NIcon><TrashOutline /></NIcon></template>
+            批量删除 ({{ selections.length }})
+          </NButton>
+        </NSpace>
       </NSpace>
+
       <NDataTable
         :columns="columns"
         :data="rows"
@@ -36,25 +63,25 @@
       />
     </NCard>
 
-    <NModal v-model:show="editVisible" preset="card" :title="editForm.id ? '编辑用户' : '新增用户'" style="width: 540px">
-      <NForm :model="editForm" label-placement="left" label-width="80">
+    <NModal v-model:show="editVisible" preset="card" :title="editForm.id ? '编辑用户' : '新增用户'" style="width: 560px" class="glass-card">
+      <NForm :model="editForm" label-placement="left" label-width="80" class="mt-8">
         <NFormItem label="用户名" required>
-          <NInput v-model:value="editForm.username" :disabled="!!editForm.id" />
+          <NInput v-model:value="editForm.username" :disabled="!!editForm.id" placeholder="请输入唯一用户名" />
         </NFormItem>
         <NFormItem label="昵称">
-          <NInput v-model:value="editForm.nickName" />
+          <NInput v-model:value="editForm.nickName" placeholder="请输入用户昵称" />
         </NFormItem>
         <NFormItem label="密码" v-if="!editForm.id">
-          <NInput v-model:value="editForm.password" type="password" show-password-on="click" />
+          <NInput v-model:value="editForm.password" type="password" show-password-on="click" placeholder="请输入初始密码" />
         </NFormItem>
         <NFormItem label="邮箱">
-          <NInput v-model:value="editForm.email" />
+          <NInput v-model:value="editForm.email" placeholder="example@domain.com" />
         </NFormItem>
         <NFormItem label="电话">
-          <NInput v-model:value="editForm.phone" />
+          <NInput v-model:value="editForm.phone" placeholder="手机号码" />
         </NFormItem>
         <NFormItem label="角色">
-          <NSelect multiple v-model:value="editForm.roleIds" :options="roleOpts" />
+          <NSelect multiple v-model:value="editForm.roleIds" :options="roleOpts" placeholder="选择关联角色" />
         </NFormItem>
         <NFormItem label="状态">
           <NSwitch v-model:value="statusSwitch" />
@@ -63,7 +90,7 @@
       <template #footer>
         <NSpace justify="end">
           <NButton @click="editVisible = false">取消</NButton>
-          <NButton type="primary" @click="submitEdit">确定</NButton>
+          <NButton type="primary" @click="submitEdit">确定保存</NButton>
         </NSpace>
       </template>
     </NModal>
@@ -71,11 +98,14 @@
 </template>
 
 <script setup lang="ts">
-import { h, onMounted, ref } from 'vue'
+import { h, onMounted, ref, watch } from 'vue'
 import {
   NCard, NForm, NFormItem, NInput, NSelect, NButton, NSpace, NDataTable, NModal, NSwitch,
-  useDialog, useMessage, NTag
+  useDialog, useMessage, NTag, NIcon, type DataTableColumns
 } from 'naive-ui'
+import {
+  AddOutline, SearchOutline, RefreshOutline, TrashOutline
+} from '@vicons/ionicons5'
 import { pageUsers, getUserDetail, createUser, updateUser, deleteUsers } from '@/api/system/user'
 import { listAllRoles } from '@/api/system/role'
 import { formatDateTime } from '@/utils/date'
@@ -96,7 +126,7 @@ const statusOpts = [
   { label: '禁用', value: 0 }
 ]
 
-const columns = [
+const columns: DataTableColumns<any> = [
   { type: 'selection', width: 48 },
   { title: '用户名', key: 'username', minWidth: 120 },
   { title: '昵称', key: 'nickName', minWidth: 120 },
@@ -106,7 +136,7 @@ const columns = [
   {
     title: '状态', key: 'status', width: 90,
     render(row: any) {
-      return h(NTag, { type: row.status === 1 ? 'success' : 'error', size: 'small' }, { default: () => (row.status === 1 ? '启用' : '禁用') })
+      return h(NTag, { type: row.status === 1 ? 'success' : 'error', size: 'small', round: true }, { default: () => (row.status === 1 ? '启用' : '禁用') })
     }
   },
   {
@@ -116,9 +146,9 @@ const columns = [
     }
   },
   {
-    title: '操作', key: 'actions', width: 220, fixed: 'right',
+    title: '操作', key: 'actions', width: 220, fixed: 'right' as const,
     render(row: any) {
-      return h(NSpace, { size: 4 }, () => [
+      return h(NSpace, { size: 6 }, () => [
         h(NButton, { size: 'tiny', quaternary: true, type: 'primary', vAuth: 'system:user:edit', onClick: () => openEdit(row) }, { default: () => '编辑' }),
         h(NButton, { size: 'tiny', quaternary: true, type: 'error', vAuth: 'system:user:remove', onClick: () => removeOne(row) }, { default: () => '删除' }),
         h(NButton, { size: 'tiny', quaternary: true, vAuth: 'system:user:resetPwd', onClick: () => resetPwd(row) }, { default: () => '重置密码' })
@@ -160,8 +190,6 @@ watch(statusSwitch, (v) => { editForm.value.status = v ? 1 : 0 })
 
 async function openEdit(row?: any) {
   if (row) {
-    // List rows don't carry roleIds; fetch the detail endpoint so the role
-    // <n-select multiple> can pre-select this user's currently-assigned roles.
     editForm.value = { ...row, password: '', roleIds: [] }
     statusSwitch.value = row.status === 1
     editVisible.value = true
@@ -177,7 +205,7 @@ async function openEdit(row?: any) {
         roleIds: Array.isArray(detail.roleIds) ? detail.roleIds : []
       }
     } catch (e) {
-      // ignore: dialog stays open with empty roleIds; user can still pick again
+      // ignore
     }
   } else {
     editForm.value = { id: null, username: '', nickName: '', password: 'admin123', email: '', phone: '', roleIds: [], status: 1 }
@@ -186,7 +214,6 @@ async function openEdit(row?: any) {
   }
 }
 
-import { watch } from 'vue'
 async function submitEdit() {
   if (!editForm.value.username) {
     message.warning('请输入用户名')
@@ -194,8 +221,6 @@ async function submitEdit() {
   }
   try {
     if (editForm.value.id) {
-      // Password changes go through the dedicated /resetPwd/{id} endpoint;
-      // drop the empty field so it doesn't trip the @Size(min=8, max=64) check.
       const { password: _pw, ...payload } = editForm.value
       void _pw
       await updateUser(payload)
@@ -259,5 +284,9 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.ml-8 { margin-left: 8px; }
+.table-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--fg-title);
+}
 </style>

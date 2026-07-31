@@ -50,7 +50,7 @@ export const useUserStore = defineStore(
       }
     }
 
-    async function login(form: { username: string; password: string }) {
+    async function login(form: { username: string; password: string; code?: string; uuid?: string }) {
       const res: any = await loginApi(form)
       applyTokens(res)
       userInfo.value = res.userInfo
@@ -58,7 +58,7 @@ export const useUserStore = defineStore(
     }
 
     async function fetchInfo() {
-      const info = await getInfoApi()
+      const info: any = await getInfoApi()
       userInfo.value = info
       return info
     }

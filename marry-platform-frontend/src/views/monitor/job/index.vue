@@ -54,7 +54,7 @@ const columns = [
     }
   },
   {
-    title: '操作', key: 'a', width: 260, fixed: 'right',
+    title: '操作', key: 'a', width: 260, fixed: 'right' as const,
     render(row: any) {
       return h(NSpace, { size: 4 }, () => [
         h(NButton, { size: 'tiny', quaternary: true, type: 'primary', onClick: () => openEdit(row) }, { default: () => '编辑' }),

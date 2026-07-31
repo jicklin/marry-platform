@@ -2,20 +2,41 @@
   <NLayout has-sider position="absolute" class="app-layout">
     <NLayoutSider
       bordered
+      collapse-mode="width"
       :collapsed="appStore.collapsed"
       :collapsed-width="64"
-      :width="220"
-      show-trigger
+      :width="230"
+      show-trigger="bar"
       :native-scrollbar="false"
-      @collapse="appStore.collapsed = true"
-      @expand="appStore.collapsed = false"
+      class="app-sider"
+      @update:collapsed="(val) => (appStore.collapsed = val)"
     >
-      <div class="logo-bar">
-        <NIcon size="22" color="#2d8cf0"><SettingsOutline /></NIcon>
-        <span v-show="!appStore.collapsed" class="logo-text">marry-platform</span>
+      <div class="logo-bar" @click="router.push('/')">
+        <div class="logo-badge">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 2L2 7L12 12L22 7L12 2Z" fill="url(#logo-grad-1)"/>
+            <path d="M2 17L12 22L22 17" stroke="url(#logo-grad-2)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M2 12L12 17L22 12" stroke="url(#logo-grad-2)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+            <defs>
+              <linearGradient id="logo-grad-1" x1="2" y1="2" x2="22" y2="12" gradientUnits="userSpaceOnUse">
+                <stop stop-color="#818cf8"/>
+                <stop offset="1" stop-color="#6366f1"/>
+              </linearGradient>
+              <linearGradient id="logo-grad-2" x1="2" y1="12" x2="22" y2="22" gradientUnits="userSpaceOnUse">
+                <stop stop-color="#a855f7"/>
+                <stop offset="1" stop-color="#6366f1"/>
+              </linearGradient>
+            </defs>
+          </svg>
+        </div>
+        <div v-show="!appStore.collapsed" class="logo-info">
+          <span class="logo-text">marry-platform</span>
+          <span class="logo-version">PRO</span>
+        </div>
       </div>
+
       <NMenu
-        :collapsed="appStore.collapsed"
+        mode="vertical"
         :collapsed-width="64"
         :collapsed-icon-size="20"
         :indent="18"
@@ -24,29 +45,91 @@
         @update:value="onMenuSelect"
       />
     </NLayoutSider>
-    <NLayout>
+
+    <NLayout class="app-main-layout">
       <NLayoutHeader bordered class="header-bar">
-        <Breadcrumb />
+        <div class="header-left">
+          <Breadcrumb />
+        </div>
+
         <div class="header-right">
-          <NButton quaternary circle @click="appStore.toggleDark()">
-            <NIcon size="18"><Moon v-if="!appStore.dark" /><Sunny v-else /></NIcon>
-          </NButton>
-          <NPopover trigger="hover" placement="bottom-end" :width="200">
+          <NTooltip trigger="hover">
             <template #trigger>
-              <div class="user-info">
-                <NAvatar round size="small" :src="userStore.userInfo?.avatar">
+              <NButton quaternary circle size="medium" class="header-action-btn" @click="toggleFullScreen">
+                <NIcon size="18"><ExpandOutline v-if="!isFullscreen" /><ContractOutline v-else /></NIcon>
+              </NButton>
+            </template>
+            {{ isFullscreen ? '退出全屏' : '全屏显示' }}
+          </NTooltip>
+
+          <NTooltip trigger="hover">
+            <template #trigger>
+              <NPopover trigger="click" placement="bottom-end" :width="280">
+                <template #trigger>
+                  <NBadge dot color="#6366f1" class="notice-badge">
+                    <NButton quaternary circle size="medium" class="header-action-btn">
+                      <NIcon size="18"><NotificationsOutline /></NIcon>
+                    </NButton>
+                  </NBadge>
+                </template>
+                <div class="notice-box">
+                  <div class="notice-header">系统通知</div>
+                  <div class="notice-item">
+                    <div class="notice-dot" />
+                    <div class="notice-content">
+                      <div class="notice-title">系统现代化 UI 升级已完成</div>
+                      <div class="notice-time">刚刚</div>
+                    </div>
+                  </div>
+                </div>
+              </NPopover>
+            </template>
+            消息通知
+          </NTooltip>
+
+          <NTooltip trigger="hover">
+            <template #trigger>
+              <NButton quaternary circle size="medium" class="header-action-btn" @click="appStore.toggleDark()">
+                <NIcon size="18">
+                  <Moon v-if="!appStore.dark" />
+                  <Sunny v-else />
+                </NIcon>
+              </NButton>
+            </template>
+            {{ appStore.dark ? '切换亮色' : '切换暗黑' }}
+          </NTooltip>
+
+          <NPopover trigger="hover" placement="bottom-end" :width="200" raw class="user-popover">
+            <template #trigger>
+              <div class="user-info-btn">
+                <NAvatar round size="small" class="user-avatar" :src="userStore.userInfo?.avatar">
                   {{ userStore.userInfo?.nickName?.charAt(0) || 'U' }}
                 </NAvatar>
                 <span class="user-name">{{ userStore.userInfo?.nickName || userStore.userInfo?.username }}</span>
+                <NIcon size="14" class="user-arrow"><ChevronDownOutline /></NIcon>
               </div>
             </template>
-            <NSpace vertical size="small">
-              <NButton block @click="router.push('/')">首页</NButton>
-              <NButton block @click="handleLogout" type="error">退出登录</NButton>
-            </NSpace>
+
+            <div class="user-dropdown-card glass-card">
+              <div class="user-dropdown-header">
+                <div class="user-dropdown-title">{{ userStore.userInfo?.nickName || userStore.userInfo?.username }}</div>
+                <div class="user-dropdown-sub">超级管理员</div>
+              </div>
+              <div class="user-dropdown-menu">
+                <div class="user-dropdown-item" @click="router.push('/')">
+                  <NIcon size="16"><HomeOutline /></NIcon>
+                  <span>系统首页</span>
+                </div>
+                <div class="user-dropdown-item danger" @click="handleLogout">
+                  <NIcon size="16"><LogOutOutline /></NIcon>
+                  <span>退出登录</span>
+                </div>
+              </div>
+            </div>
           </NPopover>
         </div>
       </NLayoutHeader>
+
       <NLayoutContent class="main-content">
         <RouterView v-slot="{ Component }">
           <Transition name="fade-slide" mode="out-in">
@@ -61,9 +144,9 @@
 </template>
 
 <script setup lang="ts">
-import { computed, h } from 'vue'
+import { computed, h, ref } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import { NIcon } from 'naive-ui'
+import { NIcon, NBadge, NTooltip, NPopover } from 'naive-ui'
 import {
   SettingsOutline,
   PersonOutline,
@@ -76,6 +159,12 @@ import {
   LogInOutline,
   GlobeOutline,
   CodeSlashOutline,
+  NotificationsOutline,
+  ExpandOutline,
+  ContractOutline,
+  HomeOutline,
+  LogOutOutline,
+  ChevronDownOutline,
   Moon,
   Sunny
 } from '@vicons/ionicons5'
@@ -89,6 +178,19 @@ const route = useRoute()
 const appStore = useAppStore()
 const userStore = useUserStore()
 const permissionStore = usePermissionStore()
+const isFullscreen = ref(false)
+
+function toggleFullScreen() {
+  if (!document.fullscreenElement) {
+    document.documentElement.requestFullscreen()
+    isFullscreen.value = true
+  } else {
+    if (document.exitFullscreen) {
+      document.exitFullscreen()
+      isFullscreen.value = false
+    }
+  }
+}
 
 const renderIcon = (icon: any) => () => icon ? h(NIcon, null, { default: () => h(icon) }) : null
 
@@ -103,7 +205,24 @@ const iconMap: Record<string, any> = {
   ListOutline,
   LogInOutline,
   GlobeOutline,
-  CodeSlashOutline
+  CodeSlashOutline,
+
+  system: SettingsOutline,
+  user: PersonOutline,
+  role: PeopleCircleOutline,
+  menu: MenuOutline,
+  dept: BusinessOutline,
+  dict: BookOutline,
+  config: OptionsOutline,
+  notice: BookOutline,
+  log: ListOutline,
+  operlog: ListOutline,
+  loginlog: LogInOutline,
+  online: GlobeOutline,
+  job: OptionsOutline,
+  gen: CodeSlashOutline,
+  monitor: GlobeOutline,
+  tool: CodeSlashOutline
 }
 
 const menuOptions = computed(() => {
@@ -118,8 +237,6 @@ const menuOptions = computed(() => {
       icon: renderIcon(iconMap[menu.icon] || MenuOutline),
       path: fullPath
     }
-    // Only attach `children` when there are real sub-items so NMenu doesn't
-    // render an expand arrow on what should be a leaf page (e.g. 用户管理).
     if (visibleChildren.length) option.children = visibleChildren
     return option
   }
@@ -127,10 +244,18 @@ const menuOptions = computed(() => {
 })
 
 const activeMenuKey = computed(() => {
-  const r = route.path.replace(/^\//, '').split('/')
-  const top = r[0]
-  const item = permissionStore.sidebarRoutes.find((m: any) => m.path === top)
-  return item ? String(item.id) : null
+  const currentPath = route.path
+  function findKey(options: any[]): string | null {
+    for (const opt of options) {
+      if (opt.path && opt.path === currentPath) return opt.key
+      if (opt.children?.length) {
+        const childKey = findKey(opt.children)
+        if (childKey) return childKey
+      }
+    }
+    return null
+  }
+  return findKey(menuOptions.value) || null
 })
 
 function onMenuSelect(_key: string, option: any) {
@@ -145,77 +270,239 @@ async function handleLogout() {
 <style scoped>
 .app-layout {
   height: 100vh;
+  background-color: var(--bg-body);
+}
+
+.app-sider {
+  background-color: var(--bg-card);
+  border-right: 1px solid var(--border-soft) !important;
+  z-index: 10;
 }
 
 .logo-bar {
   display: flex;
   align-items: center;
-  gap: 8px;
-  height: 56px;
+  gap: 12px;
+  height: 60px;
   padding: 0 16px;
   border-bottom: 1px solid var(--border-soft);
-  font-weight: 700;
-  letter-spacing: -0.5px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.logo-badge {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: var(--bg-hover);
+  border: 1px solid var(--border-soft);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow-soft);
+  flex-shrink: 0;
+}
+
+.logo-info {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  overflow: hidden;
 }
 
 .logo-text {
-  font-size: 16px;
-  background: linear-gradient(135deg, #2d8cf0, #57a3f3);
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: -0.4px;
+  background: var(--primary-gradient);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   white-space: nowrap;
 }
 
+.logo-version {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 1px 5px;
+  border-radius: 6px;
+  background: var(--primary-light);
+  color: var(--primary-color);
+  letter-spacing: 0.5px;
+}
+
 .header-bar {
-  height: 56px;
+  height: 60px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 16px;
+  padding: 0 20px;
+  background-color: var(--bg-page-header);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border-soft) !important;
 }
 
 .header-right {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 8px;
 }
 
-.user-info {
+.header-action-btn {
+  border-radius: 10px !important;
+  color: var(--fg-default);
+  transition: all 0.2s ease;
+}
+
+.header-action-btn:hover {
+  background-color: var(--bg-hover);
+  color: var(--primary-color);
+}
+
+.user-info-btn {
   display: flex;
   align-items: center;
   gap: 8px;
+  padding: 4px 10px;
+  border-radius: 10px;
   cursor: pointer;
-  padding: 4px 8px;
-  border-radius: 6px;
-  transition: background-color 0.2s;
+  transition: all 0.2s ease;
+  border: 1px solid transparent;
 }
 
-.user-info:hover {
+.user-info-btn:hover {
   background-color: var(--bg-hover);
+  border-color: var(--border-soft);
+}
+
+.user-avatar {
+  background: var(--primary-gradient);
+  color: #fff;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3);
 }
 
 .user-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--fg-title);
+}
+
+.user-arrow {
+  color: var(--fg-muted);
+  transition: transform 0.2s ease;
+}
+
+.user-dropdown-card {
+  padding: 8px;
+  width: 200px;
+}
+
+.user-dropdown-header {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border-soft);
+  margin-bottom: 6px;
+}
+
+.user-dropdown-title {
   font-size: 14px;
+  font-weight: 600;
+  color: var(--fg-title);
+}
+
+.user-dropdown-sub {
+  font-size: 12px;
+  color: var(--fg-muted);
+  margin-top: 2px;
+}
+
+.user-dropdown-menu {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.user-dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  color: var(--fg-default);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.user-dropdown-item:hover {
+  background-color: var(--bg-hover);
+  color: var(--primary-color);
+}
+
+.user-dropdown-item.danger:hover {
+  background-color: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+}
+
+.notice-box {
+  padding: 12px 14px;
+}
+
+.notice-header {
+  font-weight: 600;
+  font-size: 14px;
+  margin-bottom: 10px;
+  color: var(--fg-title);
+}
+
+.notice-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 8px;
+  border-radius: 8px;
+  background-color: var(--bg-hover);
+}
+
+.notice-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--primary-color);
+  margin-top: 5px;
+  flex-shrink: 0;
+}
+
+.notice-title {
+  font-size: 12px;
+  font-weight: 500;
   color: var(--fg-default);
 }
 
+.notice-time {
+  font-size: 10px;
+  color: var(--fg-muted);
+  margin-top: 2px;
+}
+
 .main-content {
-  padding: 16px;
+  padding: 20px;
   background-color: var(--bg-main);
   overflow: auto;
-  transition: background-color 0.2s ease;
 }
 
 .fade-slide-enter-active,
 .fade-slide-leave-active {
-  transition: all 0.25s ease;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
+
 .fade-slide-enter-from {
   opacity: 0;
-  transform: translateX(10px);
+  transform: translateY(8px);
 }
+
 .fade-slide-leave-to {
   opacity: 0;
-  transform: translateX(-10px);
+  transform: translateY(-8px);
 }
 </style>

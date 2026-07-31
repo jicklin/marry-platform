@@ -78,6 +78,7 @@ import {
 } from 'naive-ui'
 import { pageUsers, getUserDetail, createUser, updateUser, deleteUsers } from '@/api/system/user'
 import { listAllRoles } from '@/api/system/role'
+import { formatDateTime } from '@/utils/date'
 
 const dialog = useDialog()
 const message = useMessage()
@@ -111,7 +112,7 @@ const columns = [
   {
     title: '创建时间', key: 'createTime', width: 180,
     render(row: any) {
-      return row.createTime || '-'
+      return formatDateTime(row.createTime)
     }
   },
   {
@@ -193,7 +194,11 @@ async function submitEdit() {
   }
   try {
     if (editForm.value.id) {
-      await updateUser(editForm.value)
+      // Password changes go through the dedicated /resetPwd/{id} endpoint;
+      // drop the empty field so it doesn't trip the @Size(min=8, max=64) check.
+      const { password: _pw, ...payload } = editForm.value
+      void _pw
+      await updateUser(payload)
       message.success('更新成功')
     } else {
       await createUser(editForm.value)

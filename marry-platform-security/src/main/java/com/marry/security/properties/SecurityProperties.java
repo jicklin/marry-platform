@@ -20,7 +20,7 @@ public class SecurityProperties {
      * deploying with {@code "*"} would silently break the cookie-based flow
      * delivered in Phase 3.
      */
-    private List<String> allowedOrigins = List.of("http://localhost:5174");
+    private List<String> allowedOrigins = List.of("*");
 
     /**
      * Auth-flow endpoints that {@code JwtAuthenticationFilter} must always let

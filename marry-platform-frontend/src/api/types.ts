@@ -117,6 +117,18 @@ export interface SysNotice {
   createTime?: string
 }
 
+export interface SysNote {
+  id: number
+  title: string
+  content?: string
+  tags?: string
+  isPinned?: number
+  status: number
+  remark?: string
+  createTime?: string
+  updateTime?: string
+}
+
 // monitor
 export interface SysJob {
   id: number

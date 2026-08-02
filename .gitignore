@@ -43,3 +43,6 @@ application-local.yml
 
 # Maven local repository
 .mvn/wrapper/maven-wrapper.jar
+
+.omo
+.codegraph

@@ -547,10 +547,36 @@ onMounted(load)
   max-height: none;
   overflow: visible;
 }
+.tl-content :deep(.md-editor),
+.tl-content :deep(.md-editor-previewOnly),
+.tl-content :deep(.md-editor-content),
+.tl-content :deep(.md-editor-preview-wrapper),
+.tl-content :deep(.md-editor-html),
 .tl-content :deep(.md-editor-preview) {
   background: transparent !important;
+  border: none !important;
   box-shadow: none !important;
-  color: inherit;
+}
+/* 让 markdown 内容跟随卡片配色，保证可读性 */
+.tl-content :deep(.md-editor) {
+  --md-bk-color: transparent;
+  --md-bk-color-outstand: rgba(0, 0, 0, 0.05);
+  --md-bk-hover-color: transparent;
+  --md-border-color: transparent;
+  --md-border-hover-color: transparent;
+  --md-border-active-color: transparent;
+  --md-color: #57534e;
+  --md-theme-color: #57534e;
+  --md-theme-bg-color: transparent;
+  --md-theme-bg-color-inset: rgba(0, 0, 0, 0.04);
+  color: #57534e;
+}
+html.dark .tl-content :deep(.md-editor) {
+  --md-bk-color-outstand: rgba(255, 255, 255, 0.06);
+  --md-color: #d6d3d1;
+  --md-theme-color: #d6d3d1;
+  --md-theme-bg-color-inset: rgba(255, 255, 255, 0.06);
+  color: #d6d3d1;
 }
 .tl-mask {
   position: absolute;
@@ -656,19 +682,17 @@ onMounted(load)
   padding: 40px;
 }
 
-@media (prefers-color-scheme: dark) {
-  .hero {
-    background: linear-gradient(120deg, #451a03, #78350f 60%, #92400e);
-  }
-  .hero-title { color: #fde68a; }
-  .hero-sub { color: #fcd34d; }
-  .month-badge { color: #fde68a; background: linear-gradient(120deg, #78350f, #92400e); }
-  .tl-card { background: rgba(41, 37, 36, 0.85); }
-  .tl-title { color: #f5f5f4; }
-  .tl-content { color: #d6d3d1; }
-  .tl-mask { background: linear-gradient(180deg, rgba(41, 37, 36, 0) 0%, rgba(41, 37, 36, 0.9) 100%); }
-  .tl-toggle:hover { color: #fbbf24; }
-  .tl-file { background: #292524; }
-  .tl-dir { background: #292524; color: #a8a29e; }
+html.dark .hero {
+  background: linear-gradient(120deg, #451a03, #78350f 60%, #92400e);
 }
+html.dark .hero-title { color: #fde68a; }
+html.dark .hero-sub { color: #fcd34d; }
+html.dark .month-badge { color: #fde68a; background: linear-gradient(120deg, #78350f, #92400e); }
+html.dark .tl-card { background: rgba(41, 37, 36, 0.85); }
+html.dark .tl-title { color: #f5f5f4; }
+html.dark .tl-content { color: #d6d3d1; }
+html.dark .tl-mask { background: linear-gradient(180deg, rgba(41, 37, 36, 0) 0%, rgba(41, 37, 36, 0.9) 100%); }
+html.dark .tl-toggle:hover { color: #fbbf24; }
+html.dark .tl-file { background: #292524; }
+html.dark .tl-dir { background: #292524; color: #a8a29e; }
 </style>

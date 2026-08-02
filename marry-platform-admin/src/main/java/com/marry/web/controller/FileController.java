@@ -23,8 +23,9 @@ public class FileController {
     @Operation(summary = "上传文件")
     @PreAuthorize("isAuthenticated()")
     @PostMapping("/upload")
-    public R<SysFile> upload(@RequestPart("file") MultipartFile file) throws IOException {
-        return R.ok(fileService.upload(file));
+    public R<SysFile> upload(@RequestPart("file") MultipartFile file,
+                             @RequestParam(value = "dir", required = false) String dir) throws IOException {
+        return R.ok(fileService.upload(file, dir));
     }
 
     @Operation(summary = "查询文件元数据")

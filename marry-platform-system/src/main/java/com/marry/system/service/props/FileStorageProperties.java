@@ -15,6 +15,9 @@ public class FileStorageProperties {
     /** Bucket/folder name within the path. */
     private String bucket = "default";
 
+    /** Root directory for business-grouped uploads (e.g. events). */
+    private String eventRoot = "events";
+
     /** URL prefix for serving files via the backend (Spring static resource handler). */
     private String publicBase = "/api/static/upload/";
 }

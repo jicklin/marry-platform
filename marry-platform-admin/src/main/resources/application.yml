@@ -84,6 +84,11 @@ logging:
     name: logs/${spring.application.name}.log
 
 marry:
+  file:
+    path: ${MARRY_FILE_PATH:/Users/yoyo/Documents/马呦呦上学记}
+    bucket: ${MARRY_FILE_BUCKET:platform}
+    event-root: ${MARRY_FILE_EVENT_ROOT:events}
+    public-base: ${MARRY_FILE_PUBLIC_BASE:/api/static/upload/}
   jwt:
     secret: ${JWT_SECRET:ccucZJFr8DXdfzh0nSvUEf1NP2jdyUCR}
     access-ttl: 1800000          # 30 min

@@ -9,5 +9,7 @@ public interface IFileService {
 
     SysFile upload(MultipartFile file) throws IOException;
 
+    SysFile upload(MultipartFile file, String dir) throws IOException;
+
     SysFile getById(Long id);
 }

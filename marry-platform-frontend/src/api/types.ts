@@ -203,3 +203,30 @@ export interface GenTableColumn {
   dictType?: string
   sort?: number
 }
+
+// child growth records
+export interface ChildEventFile {
+  id: number
+  eventId: number
+  fileId: number
+  mediaType: string
+  sortNo?: number
+  url?: string
+  originalName?: string
+  contentType?: string
+  size?: number
+}
+
+export interface ChildEvent {
+  id: number
+  title: string
+  content?: string
+  eventDate: string
+  category?: string
+  tags?: string
+  importance?: number
+  mood?: string
+  dirName?: string
+  createTime?: string
+  attachFiles?: ChildEventFile[]
+}

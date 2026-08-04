@@ -13,21 +13,7 @@
     >
       <div class="logo-bar" @click="router.push('/')">
         <div class="logo-badge">
-          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M12 2L2 7L12 12L22 7L12 2Z" fill="url(#logo-grad-1)"/>
-            <path d="M2 17L12 22L22 17" stroke="url(#logo-grad-2)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
-            <path d="M2 12L12 17L22 12" stroke="url(#logo-grad-2)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
-            <defs>
-              <linearGradient id="logo-grad-1" x1="2" y1="2" x2="22" y2="12" gradientUnits="userSpaceOnUse">
-                <stop stop-color="#818cf8"/>
-                <stop offset="1" stop-color="#6366f1"/>
-              </linearGradient>
-              <linearGradient id="logo-grad-2" x1="2" y1="12" x2="22" y2="22" gradientUnits="userSpaceOnUse">
-                <stop stop-color="#a855f7"/>
-                <stop offset="1" stop-color="#6366f1"/>
-              </linearGradient>
-            </defs>
-          </svg>
+          <img src="/favicon.svg" alt="Marry Platform" class="site-logo" />
         </div>
         <div v-show="!appStore.collapsed" class="logo-info">
           <span class="logo-text">marry-platform</span>
@@ -301,6 +287,12 @@ async function handleLogout() {
   justify-content: center;
   box-shadow: var(--shadow-soft);
   flex-shrink: 0;
+}
+
+.site-logo {
+  width: 28px;
+  height: 28px;
+  display: block;
 }
 
 .logo-info {

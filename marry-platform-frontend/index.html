@@ -2,21 +2,24 @@
 <html lang="zh-CN">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" href="/favicon.svg" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="theme-color" content="#fb7185" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>marry-platform</title>
+    <title>Marry Platform</title>
     <style>
       html, body, #app { height: 100%; margin: 0; padding: 0; }
       body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif; background-color: #f5f7fa; }
       #app-loading { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: #2d8cf0; }
-      #app-loading .logo { font-size: 48px; font-weight: 700; letter-spacing: -1px; margin-bottom: 16px; background: linear-gradient(135deg, #2d8cf0, #5fa3ff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+      #app-loading .logo { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; font-size: 32px; font-weight: 700; letter-spacing: -1px; }
+      #app-loading .logo img { width: 52px; height: 52px; filter: drop-shadow(0 8px 14px rgba(251, 113, 133, .25)); }
+      #app-loading .logo span { background: linear-gradient(135deg, #fb7185, #e84a78); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
       #app-loading .tagline { color: #606266; font-size: 14px; }
     </style>
   </head>
   <body>
     <div id="app">
       <div id="app-loading">
-        <div class="logo">🍵 marry-platform</div>
+        <div class="logo"><img src="/favicon.svg" alt="" /><span>marry-platform</span></div>
         <div class="tagline">Loading...</div>
       </div>
     </div>

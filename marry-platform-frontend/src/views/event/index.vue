@@ -1,24 +1,51 @@
 <template>
   <div class="event-page">
-    <!-- Welcome banner -->
-    <div class="hero glass-card">
-      <div class="hero-emoji">🎒</div>
-      <div class="hero-text">
-        <h2 class="hero-title">宝贝成长记</h2>
-        <p class="hero-sub">记录每一个值得珍藏的瞬间，共 {{ totalCount }} 个成长片段</p>
+    <PigWonderland />
+
+    <!-- Growth album header -->
+    <section class="hero">
+      <div class="hero-deco" aria-hidden="true">
+        <span class="deco-circle c1" />
+        <span class="deco-circle c2" />
+        <span class="deco-circle c3" />
       </div>
-      <NButton type="primary" size="large" round v-auth="'event:add'" @click="openEdit()">
-        <template #icon><NIcon><AddOutline /></NIcon></template>
-        记录新事件
-      </NButton>
-    </div>
+
+      <div class="hero-copy">
+        <div class="hero-kicker"><span class="kicker-dot" /> GROWTH ALBUM</div>
+        <h2 class="hero-title">宝贝成长记 <span class="title-sparkle">✦</span></h2>
+        <p class="hero-sub">把闪闪发光的小日子，认真收藏进时光里。</p>
+        <div class="hero-meta">
+          <div class="hero-counter">
+            <strong>{{ totalCount }}</strong>
+            <span>个成长片段</span>
+          </div>
+          <span class="meta-divider" />
+          <span class="hero-wish">每一次回看，都是温柔的相遇</span>
+        </div>
+      </div>
+
+      <div class="hero-visual">
+        <div class="pig-picture">
+          <span class="picture-star star-one">✦</span>
+          <span class="picture-star star-two">✦</span>
+          <img :src="flowerPigUrl" alt="戴小花的可爱小猪" />
+        </div>
+        <NButton class="hero-add-btn" type="primary" color="#f06586" size="large" round
+                 v-auth="'event:add'" @click="openEdit()">
+          <template #icon><NIcon><AddOutline /></NIcon></template>
+          记录新故事
+        </NButton>
+      </div>
+    </section>
 
     <!-- Filters -->
     <NCard class="filter-card" :bordered="false">
-      <NSpace align="center" wrap :size="12">
-        <NInput v-model:value="query.keyword" placeholder="搜索标题 / 内容" clearable style="width: 220px"
-                @keyup.enter="search" />
-        <NSelect v-model:value="query.category" placeholder="分类" clearable style="width: 130px" :options="categoryOptions" />
+      <NSpace align="center" wrap :size="[12, 10]">
+        <NInput v-model:value="query.keyword" placeholder="搜索标题 / 内容…" clearable style="width: 220px"
+                @keyup.enter="search">
+          <template #prefix><NIcon size="14" style="opacity:.45"><SearchOutline /></NIcon></template>
+        </NInput>
+        <NSelect v-model:value="query.category" placeholder="全部分类" clearable style="width: 130px" :options="categoryOptions" />
         <NSelect v-model:value="query.importance" placeholder="重要程度" clearable style="width: 130px" :options="importanceOptions" />
         <NRadioGroup v-model:value="range" size="small">
           <NRadioButton value="all">全部</NRadioButton>
@@ -34,15 +61,20 @@
     <div class="timeline-wrap">
       <template v-for="group in groupedEvents" :key="group.month">
         <div class="month-divider">
-          <span class="month-badge">{{ group.month }}</span>
+          <span class="month-badge">
+            {{ group.month }}
+            <span class="month-count">{{ group.list.length }}</span>
+          </span>
           <span class="month-line" />
         </div>
 
         <div class="timeline-list">
           <div class="timeline-item" v-for="ev in group.list" :key="ev.id">
             <div class="tl-dot" :class="'dot-' + (ev.category || 'other')" />
-            <div class="tl-card glass-card">
+            <div class="tl-card" :class="'cat-' + (ev.category || 'other')">
+              <!-- Card header: date + tags -->
               <div class="tl-head">
+                <div class="tl-date">{{ formatDateFull(ev.eventDate) }}</div>
                 <div class="tl-tags">
                   <NTag v-if="ev.category" size="small" :bordered="false" :color="categoryColor(ev.category)">
                     {{ ev.category }}
@@ -50,25 +82,38 @@
                   <NTag v-if="ev.importance === 1" size="small" type="warning" :bordered="false">⭐ 重要</NTag>
                   <NTag v-if="ev.importance === 2" size="small" type="error" :bordered="false">🏆 里程碑</NTag>
                 </div>
-                <div class="tl-date">{{ formatDate(ev.eventDate) }}</div>
               </div>
 
               <h3 class="tl-title">{{ ev.title }}</h3>
 
-              <div v-if="ev.content" class="tl-content" :class="{ expanded: isExpanded(ev.id) }">
-                <MdPreview :model-value="ev.content" :theme="editorTheme" class="md-preview" />
+              <div v-if="previewContent(ev)" class="tl-content" :class="{ expanded: isExpanded(ev.id) }">
+                <MdPreview :model-value="previewContent(ev)" :theme="editorTheme" class="md-preview" />
                 <div v-if="contentLong(ev) && !isExpanded(ev.id)" class="tl-mask" />
               </div>
               <div v-if="contentLong(ev)" class="tl-toggle" @click="toggleExpand(ev.id)">
-                <NIcon size="13"><span>{{ isExpanded(ev.id) ? '▲' : '▼' }}</span></NIcon>
-                {{ isExpanded(ev.id) ? '收起' : '展开全文' }}
+                {{ isExpanded(ev.id) ? '▲ 收起' : '▼ 展开全文' }}
               </div>
 
-              <!-- image grid from attachments (inline images already inside content) -->
-              <div v-if="imageUrls(ev).length" class="tl-imgs">
+              <!-- Inline and attached media use fixed thumbnails; click to preview originals. -->
+              <div v-if="mediaItems(ev).length" class="tl-media-section">
+                <div class="tl-media-head">
+                  <span>影像记录</span>
+                  <small>{{ mediaItems(ev).length }} 项</small>
+                </div>
                 <NImageGroup>
-                  <NImage v-for="(u, i) in imageUrls(ev)" :key="i" :src="u" width="110" height="110"
-                          object-fit="cover" class="tl-img" />
+                  <div class="tl-media-grid">
+                    <template v-for="(media, i) in mediaItems(ev)" :key="`${media.type}-${media.url}-${i}`">
+                      <NImage v-if="media.type === 'image'" :src="media.url" :alt="media.name || ev.title"
+                              object-fit="cover" lazy class="tl-media-image" />
+                      <button v-else type="button" class="tl-video-thumb"
+                              :aria-label="`播放视频 ${media.name || i + 1}`" @click="openVideoPreview(media)">
+                        <video :src="media.url" preload="metadata" muted />
+                        <span class="video-shade" />
+                        <span class="video-play"><span class="play-triangle" /></span>
+                        <span class="video-label">点击播放</span>
+                      </button>
+                    </template>
+                  </div>
                 </NImageGroup>
               </div>
 
@@ -82,8 +127,10 @@
               </div>
 
               <div class="tl-foot">
-                <span v-if="ev.dirName" class="tl-dir">📁 {{ ev.dirName }}</span>
-                <span v-if="ev.mood" class="tl-mood">{{ ev.mood }}</span>
+                <div class="tl-foot-left">
+                  <span v-if="ev.mood" class="tl-mood">{{ ev.mood }}</span>
+                  <span v-if="ev.dirName" class="tl-dir">📁 {{ ev.dirName }}</span>
+                </div>
                 <NSpace class="tl-actions" :size="4">
                   <NButton size="tiny" quaternary type="primary" @click="openShare(ev)">分享成长图</NButton>
                   <NButton size="tiny" quaternary type="primary" v-auth="'event:edit'" @click="openEdit(ev)">编辑</NButton>
@@ -168,6 +215,14 @@
       </template>
     </NModal>
 
+    <!-- Video preview -->
+    <NModal v-model:show="videoPreviewVisible" preset="card" :title="videoPreviewTitle"
+            style="width: min(900px, 92vw)" class="video-preview-modal">
+      <div class="video-preview-wrap">
+        <video v-if="videoPreviewVisible" :src="videoPreviewUrl" controls autoplay preload="metadata" />
+      </div>
+    </NModal>
+
     <!-- Share growth image -->
     <ShareCard ref="shareCardRef" :event="shareEvent" />
   </div>
@@ -183,12 +238,14 @@ import {
 import { MdEditor, MdPreview, NormalToolbar } from 'md-editor-v3'
 import 'md-editor-v3/lib/style.css'
 import dayjs from 'dayjs'
-import { AddOutline, DocumentAttachOutline, VideocamOutline } from '@vicons/ionicons5'
+import { AddOutline, DocumentAttachOutline, VideocamOutline, SearchOutline } from '@vicons/ionicons5'
 import { useAppStore } from '@/stores/app'
 import { pageEvents, createEvent, updateEvent, deleteEvents, attachFile, detachFile } from '@/api/event'
 import { uploadFile } from '@/api/system/file'
 import type { ChildEvent, ChildEventFile } from '@/api/types'
 import ShareCard from './components/ShareCard.vue'
+import PigWonderland from './components/PigWonderland.vue'
+import flowerPigUrl from '@/assets/pig/flower-pig.svg'
 
 const message = useMessage()
 const dialog = useDialog()
@@ -272,8 +329,24 @@ const groupedEvents = computed(() => {
 
 const expandedIds = ref<Set<number>>(new Set())
 
+interface EventMedia {
+  type: 'image' | 'video'
+  url: string
+  name?: string
+}
+
+function previewContent(ev: ChildEvent): string {
+  return (ev.content || '')
+    .replace(/<video\b[^>]*>[\s\S]*?<\/video>/gi, '')
+    .replace(/<video\b[^>]*\/>/gi, '')
+    .replace(/<img\b[^>]*>/gi, '')
+    .replace(/!\[[^\]]*\]\([^)]*\)/g, '')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim()
+}
+
 function contentLong(ev: ChildEvent) {
-  return (ev.content || '').length > 220
+  return previewContent(ev).length > 220
 }
 
 function isExpanded(id: number) {
@@ -287,6 +360,13 @@ function toggleExpand(id: number) {
   expandedIds.value = next
 }
 
+/** 当年只显示 M月D日；跨年显示 YYYY年M月D日 */
+function formatDateFull(d?: string) {
+  if (!d) return '-'
+  const date = dayjs(d)
+  return date.year() === dayjs().year() ? date.format('M月D日') : date.format('YYYY年M月D日')
+}
+
 function formatDate(d?: string) {
   return d ? dayjs(d).format('M月D日') : '-'
 }
@@ -298,14 +378,66 @@ function formatSize(size?: number) {
   return (size / 1024 / 1024).toFixed(1) + ' MB'
 }
 
-function imageUrls(ev: ChildEvent): string[] {
-  const urls: string[] = []
-  ev.attachFiles?.filter((f) => f.mediaType === 'image' && f.url).forEach((f) => urls.push(f.url!))
-  return urls.slice(0, 9)
+function attachmentMediaType(file: ChildEventFile): EventMedia['type'] | null {
+  const mediaType = (file.mediaType || '').toLowerCase()
+  const contentType = (file.contentType || '').toLowerCase()
+  if (mediaType === 'image' || contentType.startsWith('image/')) return 'image'
+  if (mediaType === 'video' || contentType.startsWith('video/')) return 'video'
+  return null
+}
+
+function mediaItems(ev: ChildEvent): EventMedia[] {
+  const items: EventMedia[] = []
+  const content = ev.content || ''
+  let match: RegExpExecArray | null
+
+  const markdownImage = /!\[([^\]]*)\]\((?:<)?([^\s)>]+)(?:>)?(?:\s+["'][^"']*["'])?\)/g
+  while ((match = markdownImage.exec(content))) {
+    items.push({ type: 'image', url: match[2], name: match[1] || undefined })
+  }
+
+  const htmlImage = /<img\b[^>]*\bsrc=["']([^"']+)["'][^>]*>/gi
+  while ((match = htmlImage.exec(content))) {
+    items.push({ type: 'image', url: match[1] })
+  }
+
+  const htmlVideo = /<video\b[^>]*\bsrc=["']([^"']+)["'][^>]*>/gi
+  while ((match = htmlVideo.exec(content))) {
+    items.push({ type: 'video', url: match[1] })
+  }
+
+  const videoBlock = /<video\b[^>]*>([\s\S]*?)<\/video>/gi
+  while ((match = videoBlock.exec(content))) {
+    const source = match[1].match(/<source\b[^>]*\bsrc=["']([^"']+)["']/i)
+    if (source) items.push({ type: 'video', url: source[1] })
+  }
+
+  ev.attachFiles?.forEach((file) => {
+    const type = attachmentMediaType(file)
+    if (type && file.url) items.push({ type, url: file.url, name: file.originalName })
+  })
+
+  const seen = new Set<string>()
+  return items.filter((item) => {
+    const key = `${item.type}:${item.url}`
+    if (seen.has(key)) return false
+    seen.add(key)
+    return true
+  })
 }
 
 function fileAttachments(ev: ChildEvent): ChildEventFile[] {
-  return ev.attachFiles?.filter((f) => f.mediaType !== 'image') || []
+  return ev.attachFiles?.filter((file) => !attachmentMediaType(file)) || []
+}
+
+const videoPreviewVisible = ref(false)
+const videoPreviewUrl = ref('')
+const videoPreviewTitle = ref('视频预览')
+
+function openVideoPreview(media: EventMedia) {
+  videoPreviewUrl.value = media.url
+  videoPreviewTitle.value = media.name || '视频预览'
+  videoPreviewVisible.value = true
 }
 
 // ---------------- edit ----------------
@@ -447,44 +579,192 @@ onMounted(load)
 </script>
 
 <style scoped>
+/* ===================== Layout ===================== */
 .event-page {
   display: flex;
   flex-direction: column;
   gap: 18px;
 }
 
+/* ===================== Growth album header ===================== */
 .hero {
+  position: relative;
+  overflow: hidden;
+  min-height: 184px;
   display: flex;
   align-items: center;
-  gap: 18px;
-  padding: 26px 30px;
-  background: linear-gradient(120deg, #fff7ed 0%, #fef3c7 45%, #fde68a 100%);
-  border-radius: 18px;
+  justify-content: space-between;
+  gap: 32px;
+  padding: 28px 36px;
+  border: 1px solid rgba(244, 114, 182, 0.14);
+  border-radius: 24px;
+  background:
+    linear-gradient(112deg, rgba(255, 255, 255, 0.96), rgba(253, 242, 248, 0.92) 52%, rgba(239, 246, 255, 0.9));
+  box-shadow: 0 12px 38px rgba(190, 78, 121, 0.09);
 }
-.hero-emoji {
-  font-size: 44px;
-  filter: drop-shadow(0 4px 8px rgba(217, 119, 6, 0.25));
+.hero::after {
+  content: '';
+  position: absolute;
+  width: 260px;
+  height: 260px;
+  right: 80px;
+  top: -190px;
+  border: 38px solid rgba(255, 255, 255, 0.5);
+  border-radius: 50%;
+  pointer-events: none;
 }
-.hero-text {
+
+.hero-deco { position: absolute; inset: 0; pointer-events: none; }
+.deco-circle { position: absolute; border-radius: 50%; filter: blur(2px); }
+.deco-circle.c1 {
+  width: 220px;
+  height: 220px;
+  top: -125px;
+  left: 26%;
+  background: radial-gradient(circle, rgba(251, 207, 232, 0.46), transparent 70%);
+}
+.deco-circle.c2 {
+  width: 180px;
+  height: 180px;
+  right: -48px;
+  bottom: -98px;
+  background: radial-gradient(circle, rgba(147, 197, 253, 0.34), transparent 70%);
+}
+.deco-circle.c3 {
+  width: 110px;
+  height: 110px;
+  left: -42px;
+  bottom: -54px;
+  background: radial-gradient(circle, rgba(253, 224, 71, 0.2), transparent 70%);
+}
+
+.hero-copy {
+  position: relative;
+  z-index: 1;
+  min-width: 0;
   flex: 1;
+}
+.hero-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin-bottom: 8px;
+  color: #d75d83;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 2.2px;
+}
+.kicker-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #fb7185;
+  box-shadow: 0 0 0 5px rgba(251, 113, 133, 0.12);
 }
 .hero-title {
   margin: 0;
-  font-size: 24px;
-  font-weight: 700;
-  color: #92400e;
+  color: #3f2b34;
+  font-size: clamp(25px, 2.2vw, 32px);
+  font-weight: 800;
+  line-height: 1.25;
+  letter-spacing: -0.8px;
+}
+.title-sparkle {
+  display: inline-block;
+  color: #f5b83d;
+  font-size: 18px;
+  vertical-align: top;
+  animation: titleTwinkle 2.6s ease-in-out infinite;
+}
+@keyframes titleTwinkle {
+  0%, 100% { opacity: 0.55; transform: rotate(0deg) scale(0.86); }
+  50% { opacity: 1; transform: rotate(24deg) scale(1.08); }
 }
 .hero-sub {
-  margin: 4px 0 0;
-  font-size: 13px;
-  color: #b45309;
+  max-width: 520px;
+  margin: 8px 0 0;
+  color: #866875;
+  font-size: 14px;
+  line-height: 1.7;
+}
+.hero-meta {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-top: 17px;
+}
+.hero-counter {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  color: #8f7280;
+  font-size: 12px;
+}
+.hero-counter strong {
+  color: #e2527c;
+  font-family: ui-rounded, 'SF Pro Rounded', 'PingFang SC', sans-serif;
+  font-size: 24px;
+  font-weight: 800;
+  line-height: 1;
+}
+.meta-divider {
+  width: 1px;
+  height: 18px;
+  background: rgba(190, 120, 145, 0.2);
+}
+.hero-wish {
+  color: #a08490;
+  font-size: 12px;
 }
 
+.hero-visual {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  flex-shrink: 0;
+}
+.pig-picture {
+  position: relative;
+  width: 146px;
+  height: 132px;
+  overflow: visible;
+  filter: drop-shadow(0 14px 14px rgba(167, 71, 101, 0.15));
+  transform: rotate(2deg);
+}
+.pig-picture img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: contain;
+}
+.picture-star {
+  position: absolute;
+  z-index: 2;
+  color: #fff;
+  text-shadow: 0 2px 8px rgba(215, 93, 131, 0.3);
+}
+.star-one { top: 9px; right: 12px; font-size: 17px; }
+.star-two { left: 10px; bottom: 12px; font-size: 11px; }
+.hero-add-btn {
+  box-shadow: 0 8px 20px rgba(240, 101, 134, 0.25);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.hero-add-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 11px 24px rgba(240, 101, 134, 0.32);
+}
+
+/* ===================== Filter ===================== */
 .filter-card {
-  border-radius: 14px;
+  border-radius: 16px;
   background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
 }
 
+/* ===================== Timeline ===================== */
 .timeline-wrap {
   padding: 4px 2px 40px;
 }
@@ -493,20 +773,37 @@ onMounted(load)
   display: flex;
   align-items: center;
   gap: 14px;
-  margin: 26px 0 16px;
+  margin: 28px 0 16px;
 }
 .month-badge {
-  font-size: 17px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 15px;
   font-weight: 700;
   color: #92400e;
-  padding: 4px 14px;
+  padding: 5px 14px;
   border-radius: 999px;
   background: linear-gradient(120deg, #fef3c7, #fde68a);
+  white-space: nowrap;
+}
+.month-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: rgba(217, 119, 6, 0.2);
+  color: #b45309;
+  font-size: 11px;
+  font-weight: 700;
 }
 .month-line {
   flex: 1;
   height: 1px;
-  background: linear-gradient(90deg, rgba(217, 119, 6, 0.35), transparent);
+  background: linear-gradient(90deg, rgba(217, 119, 6, 0.3), transparent);
 }
 
 .timeline-list {
@@ -521,22 +818,29 @@ onMounted(load)
   bottom: 6px;
   width: 2px;
   border-radius: 2px;
-  background: linear-gradient(180deg, #fcd34d, #f9a8d4, #93c5fd);
+  background: linear-gradient(180deg, #fcd34d 0%, #f9a8d4 50%, #93c5fd 100%);
 }
 
 .timeline-item {
   position: relative;
-  margin-bottom: 18px;
+  margin-bottom: 16px;
+  animation: fadeSlideIn 0.3s ease both;
 }
+@keyframes fadeSlideIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
 .tl-dot {
   position: absolute;
   left: -30px;
-  top: 26px;
+  top: 24px;
   width: 14px;
   height: 14px;
   border-radius: 50%;
   border: 3px solid #fff;
-  box-shadow: 0 0 0 2px rgba(217, 119, 6, 0.3);
+  box-shadow: 0 0 0 2px rgba(217, 119, 6, 0.25);
+  z-index: 1;
 }
 .dot-学习 { background: #3b82f6; }
 .dot-运动 { background: #22c55e; }
@@ -545,42 +849,59 @@ onMounted(load)
 .dot-成长 { background: #8b5cf6; }
 .dot-other { background: #a8a29e; }
 
+/* Card + category left-border accent */
 .tl-card {
   border-radius: 16px;
   padding: 18px 22px;
-  background: rgba(255, 255, 255, 0.9);
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+  border-left: 4px solid transparent;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 .tl-card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.09);
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.10);
 }
+.cat-学习  { border-left-color: #3b82f6; }
+.cat-运动  { border-left-color: #22c55e; }
+.cat-日常  { border-left-color: #f59e0b; }
+.cat-纪念  { border-left-color: #ec4899; }
+.cat-成长  { border-left-color: #8b5cf6; }
+.cat-other { border-left-color: #d1d5db; }
 
+/* Header row */
 .tl-head {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 12px;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.tl-date {
+  font-size: 12px;
+  font-weight: 700;
+  color: #fff;
+  background: linear-gradient(120deg, #d97706, #f59e0b);
+  border-radius: 999px;
+  padding: 3px 10px;
+  flex-shrink: 0;
 }
 .tl-tags {
   display: flex;
   gap: 6px;
   flex-wrap: wrap;
-}
-.tl-date {
-  font-size: 13px;
-  color: #a8a29e;
-  font-weight: 600;
+  flex: 1;
 }
 
+/* Title */
 .tl-title {
-  margin: 10px 0 8px;
-  font-size: 19px;
+  margin: 12px 0 8px;
+  font-size: 18px;
   font-weight: 700;
-  color: #292524;
+  color: #1c1917;
+  line-height: 1.4;
 }
 
+/* Content */
 .tl-content {
   color: #57534e;
   font-size: 14px;
@@ -588,7 +909,7 @@ onMounted(load)
   position: relative;
   max-height: 260px;
   overflow: hidden;
-  transition: max-height 0.25s ease;
+  transition: max-height 0.3s ease;
 }
 .tl-content.expanded {
   max-height: none;
@@ -604,7 +925,6 @@ onMounted(load)
   border: none !important;
   box-shadow: none !important;
 }
-/* 让 markdown 内容跟随卡片配色，保证可读性 */
 .tl-content :deep(.md-editor) {
   --md-bk-color: transparent;
   --md-bk-color-outstand: rgba(0, 0, 0, 0.05);
@@ -625,40 +945,139 @@ html.dark .tl-content :deep(.md-editor) {
   --md-theme-bg-color-inset: rgba(255, 255, 255, 0.06);
   color: #d6d3d1;
 }
+
 .tl-mask {
   position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  left: 0; right: 0; bottom: 0;
   height: 70px;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.95) 100%);
+  background: linear-gradient(180deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.96) 100%);
   pointer-events: none;
 }
 .tl-toggle {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  margin-top: 8px;
+  margin-top: 6px;
   font-size: 12px;
   color: #d97706;
   cursor: pointer;
   user-select: none;
+  font-weight: 600;
 }
-.tl-toggle:hover {
-  color: #b45309;
-}
+.tl-toggle:hover { color: #b45309; }
 
-.tl-imgs {
+/* Fixed-size media gallery */
+.tl-media-section {
+  margin-top: 16px;
+  padding: 12px;
+  border: 1px solid rgba(231, 229, 228, 0.8);
+  border-radius: 14px;
+  background: rgba(250, 250, 249, 0.7);
+}
+.tl-media-head {
   display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
-  margin-top: 14px;
+  align-items: center;
+  gap: 7px;
+  margin-bottom: 10px;
+  color: #78716c;
+  font-size: 12px;
+  font-weight: 700;
 }
-.tl-img {
-  border-radius: 12px;
+.tl-media-head small {
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: #fce7f3;
+  color: #be185d;
+  font-size: 10px;
+  font-weight: 700;
+}
+.tl-media-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(128px, 1fr));
+  gap: 9px;
+}
+.tl-media-image {
+  width: 100%;
+  height: 108px;
+  overflow: hidden;
+  border-radius: 10px;
+  background: #eee;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  cursor: zoom-in;
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+.tl-media-image :deep(img) {
+  width: 100% !important;
+  height: 108px !important;
+  object-fit: cover;
+}
+.tl-media-image:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 7px 16px rgba(0, 0, 0, 0.13);
+}
+.tl-video-thumb {
+  position: relative;
+  width: 100%;
+  height: 108px;
+  padding: 0;
+  overflow: hidden;
+  border: 0;
+  border-radius: 10px;
+  background: #171717;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+  cursor: pointer;
+  font: inherit;
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+.tl-video-thumb:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 7px 16px rgba(0, 0, 0, 0.18);
+}
+.tl-video-thumb video {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+  pointer-events: none;
+}
+.video-shade {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(0,0,0,0.02), rgba(0,0,0,0.45));
+}
+.video-play {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.88);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  transform: translate(-50%, -58%);
+}
+.play-triangle {
+  width: 0;
+  height: 0;
+  margin-left: 3px;
+  border-top: 6px solid transparent;
+  border-bottom: 6px solid transparent;
+  border-left: 9px solid #e8527a;
+}
+.video-label {
+  position: absolute;
+  right: 7px;
+  bottom: 6px;
+  color: rgba(255, 255, 255, 0.92);
+  font-size: 10px;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
 }
 
+/* File attachments */
 .tl-files {
   margin-top: 12px;
   display: flex;
@@ -675,51 +1094,80 @@ html.dark .tl-content :deep(.md-editor) {
   padding: 6px 10px;
   max-width: 480px;
 }
-.file-ic { color: #f59e0b; }
+.file-ic { color: #f59e0b; flex-shrink: 0; }
 .file-name {
   color: #1d4ed8;
   text-decoration: none;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  flex: 1;
 }
-.file-size { color: #a8a29e; font-size: 12px; }
+.file-name:hover { text-decoration: underline; }
+.file-size { color: #a8a29e; font-size: 12px; flex-shrink: 0; }
 
+/* Footer */
 .tl-foot {
   display: flex;
   align-items: center;
-  gap: 12px;
+  justify-content: space-between;
+  gap: 10px;
   margin-top: 14px;
   padding-top: 12px;
   border-top: 1px dashed #e7e5e4;
+  flex-wrap: wrap;
 }
-.tl-dir {
-  font-size: 12px;
-  color: #a8a29e;
-  background: #fafaf9;
-  border-radius: 6px;
-  padding: 3px 8px;
+.tl-foot-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
 }
 .tl-mood {
   font-size: 13px;
   color: #d97706;
 }
-.tl-actions {
-  margin-left: auto;
+.tl-dir {
+  font-size: 12px;
+  color: #a8a29e;
+  background: #f5f5f4;
+  border-radius: 6px;
+  padding: 3px 8px;
 }
+.tl-actions { flex-shrink: 0; }
 
+/* Editor */
 .event-md-editor {
   width: 100%;
   height: 420px;
 }
+/* Fallback for malformed/unsupported media left inside Markdown. */
+.md-preview :deep(img),
+.md-preview :deep(video) {
+  width: 132px;
+  height: 108px;
+  display: inline-block;
+  margin: 4px 6px 4px 0;
+  border-radius: 10px;
+  object-fit: cover;
+  background: #111;
+}
 
-.md-preview video {
+.video-preview-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 240px;
+  overflow: hidden;
+  border-radius: 12px;
+  background: #090909;
+}
+.video-preview-wrap video {
+  width: 100%;
+  max-height: 72vh;
   display: block;
-  max-width: 100%;
-  max-height: 480px;
-  margin: 8px 0;
-  border-radius: 8px;
-  background: #000;
+  object-fit: contain;
+  background: #090909;
 }
 
 .pending-files {
@@ -729,26 +1177,101 @@ html.dark .tl-content :deep(.md-editor) {
   gap: 6px;
 }
 
-.empty-state {
-  margin-top: 60px;
-}
+/* States */
+.empty-state { margin-top: 60px; }
 .loading-state {
   display: flex;
   justify-content: center;
   padding: 40px;
 }
 
-html.dark .hero {
-  background: linear-gradient(120deg, #451a03, #78350f 60%, #92400e);
+/* ===================== Responsive ===================== */
+@media (max-width: 900px) {
+  .hero { padding: 25px 28px; }
+  .pig-picture { width: 106px; height: 100px; }
+  .hero-visual { gap: 12px; }
 }
-html.dark .hero-title { color: #fde68a; }
-html.dark .hero-sub { color: #fcd34d; }
+
+@media (max-width: 720px) {
+  .hero {
+    min-height: auto;
+    align-items: flex-start;
+    padding: 24px;
+  }
+  .hero-visual { align-self: center; }
+  .pig-picture { display: none; }
+  .hero-wish, .meta-divider { display: none; }
+}
+
+@media (max-width: 520px) {
+  .hero {
+    flex-direction: column;
+    gap: 20px;
+    padding: 22px 20px;
+    border-radius: 20px;
+  }
+  .hero-sub { font-size: 13px; }
+  .hero-meta { margin-top: 14px; }
+  .hero-visual { width: 100%; }
+  .hero-add-btn { width: 100%; }
+  .tl-media-section { padding: 9px; }
+  .tl-media-grid { grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 7px; }
+  .tl-media-image,
+  .tl-video-thumb { height: 92px; }
+  .tl-media-image :deep(img) { height: 92px !important; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .title-sparkle { animation: none; }
+  .hero-add-btn { transition: none; }
+}
+
+/* ===================== Dark Mode ===================== */
+html.dark .hero {
+  border-color: rgba(244, 114, 182, 0.12);
+  background: linear-gradient(112deg, rgba(41, 29, 36, 0.96), rgba(50, 31, 42, 0.94) 55%, rgba(28, 39, 55, 0.94));
+  box-shadow: 0 12px 38px rgba(0, 0, 0, 0.26);
+}
+html.dark .hero::after { border-color: rgba(255, 255, 255, 0.025); }
+html.dark .hero-kicker { color: #f9a8c0; }
+html.dark .hero-title { color: #fff1f5; }
+html.dark .hero-sub { color: #c9aeb9; }
+html.dark .hero-counter { color: #bfa4af; }
+html.dark .hero-counter strong { color: #fb8fab; }
+html.dark .hero-wish { color: #aa929d; }
+html.dark .meta-divider { background: rgba(251, 143, 171, 0.18); }
+html.dark .pig-picture {
+  filter: drop-shadow(0 14px 16px rgba(251, 113, 133, 0.13));
+}
+html.dark .deco-circle { opacity: 0.4; }
+
+html.dark .filter-card { background: rgba(28, 25, 23, 0.7); }
+
 html.dark .month-badge { color: #fde68a; background: linear-gradient(120deg, #78350f, #92400e); }
-html.dark .tl-card { background: rgba(41, 37, 36, 0.85); }
+html.dark .month-count { background: rgba(253, 230, 138, 0.15); color: #fcd34d; }
+html.dark .month-line { background: linear-gradient(90deg, rgba(253, 230, 138, 0.25), transparent); }
+
+html.dark .tl-dot { border-color: #1c1917; }
+html.dark .tl-card {
+  background: rgba(28, 25, 23, 0.88);
+  box-shadow: 0 2px 14px rgba(0, 0, 0, 0.3);
+}
+html.dark .tl-card:hover { box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4); }
 html.dark .tl-title { color: #f5f5f4; }
 html.dark .tl-content { color: #d6d3d1; }
-html.dark .tl-mask { background: linear-gradient(180deg, rgba(41, 37, 36, 0) 0%, rgba(41, 37, 36, 0.9) 100%); }
-html.dark .tl-toggle:hover { color: #fbbf24; }
-html.dark .tl-file { background: #292524; }
-html.dark .tl-dir { background: #292524; color: #a8a29e; }
+html.dark .tl-mask {
+  background: linear-gradient(180deg, rgba(28, 25, 23, 0) 0%, rgba(28, 25, 23, 0.95) 100%);
+}
+html.dark .tl-toggle { color: #fbbf24; }
+html.dark .tl-toggle:hover { color: #fde68a; }
+html.dark .tl-media-section {
+  border-color: rgba(87, 83, 78, 0.55);
+  background: rgba(28, 25, 23, 0.62);
+}
+html.dark .tl-media-head { color: #c8c1bd; }
+html.dark .tl-media-head small { background: rgba(190, 24, 93, 0.22); color: #f9a8d4; }
+html.dark .tl-media-image { background: #292524; }
+html.dark .tl-file  { background: #1c1917; }
+html.dark .tl-dir   { background: #1c1917; color: #a8a29e; }
+html.dark .tl-foot  { border-top-color: #292524; }
 </style>

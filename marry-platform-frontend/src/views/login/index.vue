@@ -15,16 +15,7 @@
           <!-- Brand Badge -->
           <div class="hero-brand">
             <div class="brand-logo">
-              <svg viewBox="0 0 40 40" width="40" height="40" aria-hidden="true">
-                <defs>
-                  <linearGradient id="hero-logo-grad" x1="0" y1="0" x2="1" y2="1">
-                    <stop offset="0%" stop-color="#818cf8" />
-                    <stop offset="100%" stop-color="#c084fc" />
-                  </linearGradient>
-                </defs>
-                <rect x="2" y="2" width="36" height="36" rx="12" fill="url(#hero-logo-grad)" />
-                <path d="M12 14h16M12 20h11M12 26h16" stroke="#ffffff" stroke-width="3" stroke-linecap="round" />
-              </svg>
+              <img src="/favicon.svg" width="44" height="44" alt="Marry Platform" />
             </div>
             <span class="brand-name">Marry Platform</span>
             <span class="brand-version">v2.5</span>

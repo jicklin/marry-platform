@@ -133,12 +133,20 @@
             <NButton size="small" @click="autoDir">自动生成</NButton>
           </NSpace>
         </NFormItem>
-        <NFormItem label="记录内容（文字中间可直接插入图片）">
+        <NFormItem label="记录内容（文字中间可直接插入图片 / 视频）">
           <MdEditor v-model="form.content" :theme="editorTheme" :on-upload-img="handleUploadImg"
-                    class="event-md-editor" />
+                    :toolbars="mdToolbars" ref="mdEditorRef" class="event-md-editor">
+            <template #defToolbars>
+              <NormalToolbar title="上传视频" :on-click="openVideoPicker">
+                <NIcon><VideocamOutline /></NIcon>
+              </NormalToolbar>
+            </template>
+          </MdEditor>
+          <input ref="videoInputRef" type="file" accept="video/*" style="display: none"
+                 @change="handleVideoFile" />
         </NFormItem>
-        <NFormItem label="附加文件（PDF / 文档等）">
-          <NUpload accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.zip,.txt"
+        <NFormItem label="附加文件（PDF / 文档 / 视频等）">
+          <NUpload accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.zip,.txt,.mp4,.webm,.mov,.m4v,.avi,.mkv,.mp3,.wav,.flac,.aac"
                    :show-file-list="false" :default-upload="false" :custom-request="customUpload">
             <NButton size="small">选择文件上传</NButton>
           </NUpload>
@@ -172,10 +180,10 @@ import {
   NRadioButton, NDatePicker, NTag, NImage, NImageGroup, NIcon, NSpin, NEmpty,
   NDynamicTags, NUpload, useMessage, useDialog
 } from 'naive-ui'
-import { MdEditor, MdPreview } from 'md-editor-v3'
+import { MdEditor, MdPreview, NormalToolbar } from 'md-editor-v3'
 import 'md-editor-v3/lib/style.css'
 import dayjs from 'dayjs'
-import { AddOutline, DocumentAttachOutline } from '@vicons/ionicons5'
+import { AddOutline, DocumentAttachOutline, VideocamOutline } from '@vicons/ionicons5'
 import { useAppStore } from '@/stores/app'
 import { pageEvents, createEvent, updateEvent, deleteEvents, attachFile, detachFile } from '@/api/event'
 import { uploadFile } from '@/api/system/file'
@@ -198,6 +206,16 @@ const importanceOptions = [
   { label: '普通', value: 0 },
   { label: '重要', value: 1 },
   { label: '里程碑', value: 2 }
+]
+
+// 精简工具栏，避免项过多被推出可视区（md-editor-v3 工具栏溢出隐藏滚动条）。
+// 不用 `=` 分组：space-between 布局会把左右两组贴两端、中间留大片空白。
+// 数字 0 指向 defToolbars 插槽中的自定义项（🎥 上传视频），紧跟"图片"按钮。
+const mdToolbars: any[] = [
+  'bold', 'underline', 'italic', 'strikeThrough', '-', 'title', 'quote',
+  'unorderedList', 'orderedList', 'task', '-', 'codeRow', 'code', 'link',
+  'image', 0, 'table', '-', 'revoke', 'next', 'save', 'prettier',
+  'fullscreen', 'preview', 'catalog'
 ]
 const categoryColors: Record<string, { color: string; textColor: string }> = {
   学习: { color: '#dbeafe', textColor: '#1d4ed8' },
@@ -333,6 +351,35 @@ const handleUploadImg = async (files: File[], callback: (urls: string[]) => void
     callback(urls)
   } catch (e) {
     message.error('图片上传失败')
+  }
+}
+
+const mdEditorRef = ref<{ getEditorView: () => any } | null>(null)
+const videoInputRef = ref<HTMLInputElement | null>(null)
+
+function openVideoPicker() {
+  videoInputRef.value?.click()
+}
+
+const handleVideoFile = async (e: Event) => {
+  const input = e.target as HTMLInputElement
+  const file = input.files?.[0]
+  input.value = ''
+  if (!file) return
+  try {
+    const res: any = await uploadFile(file, form.value.dirName)
+    const view = mdEditorRef.value?.getEditorView()
+    if (view) {
+      const { from, to } = view.state.selection.main
+      view.dispatch({
+        changes: { from, to, insert: `\n\n<video src="${res.url}" controls preload="metadata"></video>\n\n` }
+      })
+    } else {
+      form.value.content += `\n\n<video src="${res.url}" controls preload="metadata"></video>\n\n`
+    }
+    message.success('视频上传成功')
+  } catch (err) {
+    message.error('视频上传失败')
   }
 }
 
@@ -664,6 +711,15 @@ html.dark .tl-content :deep(.md-editor) {
 .event-md-editor {
   width: 100%;
   height: 420px;
+}
+
+.md-preview video {
+  display: block;
+  max-width: 100%;
+  max-height: 480px;
+  margin: 8px 0;
+  border-radius: 8px;
+  background: #000;
 }
 
 .pending-files {

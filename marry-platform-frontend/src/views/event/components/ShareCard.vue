@@ -83,6 +83,8 @@ const imgs = computed(() => {
 
 function stripMd(md: string): string {
   return md
+    .replace(/<video\b[^>]*>.*?<\/video>/gis, ' ') // drop inline <video> tags entirely
+    .replace(/<[^>]*>/g, ' ') // drop any remaining html tags
     .replace(/!\[[^\]]*\]\([^)]*\)/g, '')
     .replace(/\[([^\]]*)\]\([^)]*\)/g, '$1')
     .replace(/[#>*`~\-_|]/g, '')

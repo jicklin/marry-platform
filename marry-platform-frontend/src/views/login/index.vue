@@ -1,11 +1,15 @@
 <template>
   <div class="login-wrapper" :class="{ 'is-dark': appStore.dark }">
     <!-- Ambient Animated Background -->
-    <div class="ambient-bg">
+    <div class="ambient-bg" aria-hidden="true">
       <div class="glow-sphere sphere-1"></div>
       <div class="glow-sphere sphere-2"></div>
       <div class="glow-sphere sphere-3"></div>
       <div class="grid-pattern"></div>
+      <span class="floating-deco deco-heart-1">♥</span>
+      <span class="floating-deco deco-heart-2">♥</span>
+      <span class="floating-deco deco-star-1">✦</span>
+      <span class="floating-deco deco-star-2">✦</span>
     </div>
 
     <div class="login-container">
@@ -21,44 +25,35 @@
             <span class="brand-version">v2.5</span>
           </div>
 
-          <!-- Hero Headline -->
+          <!-- Warm family headline -->
           <div class="hero-text">
+            <span class="hero-eyebrow">OUR LITTLE WORLD</span>
             <h1 class="hero-title">
-              企业级数字婚嫁<br />
-              <span class="gradient-text">一站式管理平台</span>
+              把每一个平凡日子<br />
+              <span class="gradient-text">都收藏成温柔的纪念</span>
             </h1>
-            <p class="hero-subtitle">
-              整合高性能 RBAC 权限控制系统、全链路数据协同与实时监控，赋予企业数字化转型新势能。
-            </p>
+            <p class="hero-subtitle">成长、陪伴与生活中的小确幸，都值得被认真记录。</p>
           </div>
 
-          <!-- Feature Cards Showcase -->
-          <div class="feature-grid">
-            <div class="feature-card">
-              <div class="feature-icon flex-center">
-                <NIcon size="20"><ShieldCheckmarkOutline /></NIcon>
-              </div>
-              <div class="feature-info">
-                <h4>细粒度 RBAC 架构</h4>
-                <p>多租户隔离与灵活角色权限分配</p>
-              </div>
-            </div>
-
-            <div class="feature-card">
-              <div class="feature-icon flex-center">
-                <NIcon size="20"><SparklesOutline /></NIcon>
-              </div>
-              <div class="feature-info">
-                <h4>实时数据看板</h4>
-                <p>毫秒级响应，全面把控核心运营指标</p>
-              </div>
-            </div>
+          <!-- Transparent 3D pig scene -->
+          <div class="pig-scene" aria-hidden="true">
+            <span class="scene-bubble bubble-one">今天也要开心呀</span>
+            <span class="scene-bubble bubble-two">✦ 新故事正在发生</span>
+            <img :src="sleepyPigUrl" class="scene-pig pig-main" alt="" />
+            <img :src="balloonPigUrl" class="scene-pig pig-flying" alt="" />
+            <span class="scene-heart heart-one">♥</span>
+            <span class="scene-heart heart-two">♥</span>
           </div>
 
-          <!-- Live Metric Chip -->
+          <div class="memory-chips">
+            <span>📷 珍藏瞬间</span>
+            <span>🌱 见证成长</span>
+            <span>💗 温柔陪伴</span>
+          </div>
+
           <div class="hero-footer-chip">
             <span class="pulse-dot"></span>
-            <span>系统运行良好 · 服务可用率 99.99%</span>
+            <span>小猪守护中 · 你的回忆安全又温暖</span>
           </div>
         </div>
       </div>
@@ -83,13 +78,11 @@
           <!-- Title & Welcome Slogan -->
           <div class="form-header">
             <div class="mobile-logo flex-center">
-              <svg viewBox="0 0 36 36" width="36" height="36" aria-hidden="true">
-                <rect x="2" y="2" width="32" height="32" rx="10" fill="url(#hero-logo-grad)" />
-                <path d="M10 13h16M10 18h11M10 23h16" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" />
-              </svg>
+              <img src="/favicon.svg" width="46" height="46" alt="Marry Platform" />
             </div>
-            <h2 class="form-title">欢迎回来</h2>
-            <p class="form-subtitle">请输入您的管理账号以登录平台</p>
+            <span class="form-eyebrow">WELCOME HOME</span>
+            <h2 class="form-title">欢迎回家 <span>♡</span></h2>
+            <p class="form-subtitle">登录后，继续收藏今天的可爱与美好</p>
           </div>
 
           <!-- Login Type Tabs -->
@@ -100,7 +93,7 @@
               @click="loginType = 'account'"
             >
               <NIcon size="16" class="tab-icon"><PersonOutline /></NIcon>
-              账号密码登录
+              账号登录
             </button>
             <button
               class="tab-item"
@@ -108,13 +101,13 @@
               @click="loginType = 'mobile'"
             >
               <NIcon size="16" class="tab-icon"><PhonePortraitOutline /></NIcon>
-              手机验证登录
+              手机登录
             </button>
           </div>
 
           <!-- Demo Quick Fill Badge -->
           <div class="demo-quick-bar">
-            <span class="quick-label">演示账号：</span>
+            <span class="quick-label">体验账号</span>
             <button class="quick-chip" @click="fillDemo('admin', 'admin123')">
               <span class="chip-user">admin</span> / <span class="chip-pass">admin123</span>
               <span class="chip-action">一键填入</span>
@@ -205,7 +198,7 @@
               <template #icon v-if="!loading">
                 <NIcon><CheckmarkCircleOutline /></NIcon>
               </template>
-              {{ loading ? '验证身份中…' : '安全登录' }}
+              {{ loading ? '正在打开小世界…' : '进入我的小世界' }}
             </NButton>
           </NForm>
 
@@ -263,13 +256,13 @@
               :loading="loading"
               @click="handleMobileLogin"
             >
-              {{ loading ? '登录中…' : '手机号快捷登录' }}
+              {{ loading ? '正在打开小世界…' : '进入我的小世界' }}
             </NButton>
           </NForm>
 
           <!-- Footer Copyright -->
           <div class="form-footer">
-            <p class="copyright">© 2026 Marry Platform Enterprise. All rights reserved.</p>
+            <p class="copyright">用心记录，慢慢长大 · Marry Platform</p>
           </div>
         </div>
       </div>
@@ -287,7 +280,6 @@ import {
   ShieldCheckmarkOutline,
   SunnyOutline,
   MoonOutline,
-  SparklesOutline,
   CheckmarkCircleOutline,
   PhonePortraitOutline,
   RefreshOutline
@@ -296,6 +288,8 @@ import { useUserStore } from '@/stores/user'
 import { useAppStore } from '@/stores/app'
 import { fetchCaptcha } from '@/api/auth'
 import { message } from '@/utils/feedback'
+import sleepyPigUrl from '@/assets/pig/sleepy-pig.svg'
+import balloonPigUrl from '@/assets/pig/balloon-pig.svg'
 
 const router = useRouter()
 const route = useRoute()
@@ -605,12 +599,14 @@ async function handleMobileLogin() {
 
 .gradient-text {
   background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+  background-clip: text;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
 .is-dark .gradient-text {
   background: linear-gradient(135deg, #818cf8 0%, #c084fc 100%);
+  background-clip: text;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
@@ -1066,6 +1062,331 @@ async function handleMobileLogin() {
   .form-title {
     font-size: 22px;
   }
+}
+
+/* ================= Cute pig theme overrides ================= */
+.login-wrapper {
+  background: linear-gradient(145deg, #fff9fb 0%, #fff4f7 42%, #eef7ff 100%);
+}
+
+.sphere-1 {
+  background: radial-gradient(circle, #ffc1d3 0%, #ffe3ec 72%);
+  opacity: 0.68;
+}
+.sphere-2 {
+  background: radial-gradient(circle, #b9ddff 0%, #e3f2ff 72%);
+  opacity: 0.62;
+}
+.sphere-3 {
+  background: radial-gradient(circle, #ffe38b 0%, #fff4c7 72%);
+  opacity: 0.34;
+}
+.grid-pattern {
+  background-image: radial-gradient(rgba(226, 82, 124, 0.1) 1.2px, transparent 1.2px);
+  background-size: 28px 28px;
+  mask-image: linear-gradient(to bottom, rgba(0,0,0,.7), transparent 92%);
+}
+
+.floating-deco {
+  position: absolute;
+  color: #f58baa;
+  font-family: Georgia, serif;
+  filter: drop-shadow(0 5px 8px rgba(226, 82, 124, 0.15));
+  animation: decoFloat 6s ease-in-out infinite;
+}
+.deco-heart-1 { left: 7%; top: 16%; font-size: 24px; opacity: .46; }
+.deco-heart-2 { right: 8%; bottom: 14%; font-size: 18px; opacity: .38; animation-delay: -2.4s; }
+.deco-star-1 { right: 13%; top: 12%; color: #f3bd48; font-size: 20px; animation-delay: -1.3s; }
+.deco-star-2 { left: 12%; bottom: 10%; color: #79bff3; font-size: 15px; animation-delay: -3.7s; }
+@keyframes decoFloat {
+  0%, 100% { transform: translateY(0) rotate(-5deg); }
+  50% { transform: translateY(-18px) rotate(7deg); }
+}
+
+.login-container {
+  max-width: 1120px;
+  min-height: 680px;
+  border-color: rgba(255, 255, 255, 0.9);
+  border-radius: 34px;
+  background: rgba(255, 255, 255, 0.52);
+  box-shadow: 0 30px 80px rgba(184, 84, 121, 0.14), 0 8px 28px rgba(96, 165, 250, 0.08);
+}
+
+.login-hero {
+  width: 54%;
+  flex: none;
+  padding: 42px 52px 34px;
+  overflow: hidden;
+  border-right: 1px solid rgba(244, 114, 182, 0.12);
+  background: linear-gradient(150deg, rgba(255, 247, 250, 0.84), rgba(255, 233, 241, 0.62) 58%, rgba(235, 247, 255, 0.76));
+}
+.hero-content { position: relative; z-index: 1; }
+.brand-logo img {
+  display: block;
+  filter: drop-shadow(0 7px 10px rgba(226, 82, 124, 0.18));
+}
+.brand-name { color: #4b3340; }
+.brand-version {
+  color: #d74772;
+  background: rgba(244, 114, 182, 0.13);
+}
+.hero-text { margin-top: 24px; }
+.hero-eyebrow,
+.form-eyebrow {
+  display: block;
+  margin-bottom: 8px;
+  color: #dc6689;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 2.1px;
+}
+.hero-title {
+  margin-bottom: 12px;
+  color: #442f39;
+  font-size: clamp(30px, 2.6vw, 38px);
+  letter-spacing: -1.2px;
+}
+.gradient-text {
+  background: linear-gradient(110deg, #ed5f86, #f48caf 55%, #6eaee7);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.hero-subtitle {
+  max-width: 390px;
+  color: #8c6d7b;
+  line-height: 1.75;
+}
+
+.pig-scene {
+  position: relative;
+  height: 244px;
+  margin: 4px 0 2px;
+}
+.scene-pig {
+  position: absolute;
+  display: block;
+  object-fit: contain;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+.pig-main {
+  width: 330px;
+  height: 240px;
+  left: 18px;
+  bottom: -12px;
+  filter: drop-shadow(0 20px 18px rgba(151, 67, 94, 0.16));
+  animation: pigBreathe 4.2s ease-in-out infinite;
+}
+.pig-flying {
+  width: 132px;
+  height: 132px;
+  right: -5px;
+  top: 8px;
+  filter: drop-shadow(0 14px 14px rgba(151, 67, 94, 0.14));
+  animation: pigFly 5.4s ease-in-out infinite;
+}
+.scene-bubble {
+  position: absolute;
+  z-index: 2;
+  padding: 7px 12px;
+  border: 1px solid rgba(244, 114, 182, 0.14);
+  border-radius: 14px 14px 14px 4px;
+  background: rgba(255, 255, 255, 0.82);
+  box-shadow: 0 8px 18px rgba(190, 78, 121, 0.08);
+  color: #b65b77;
+  font-size: 11px;
+  font-weight: 600;
+  backdrop-filter: blur(8px);
+}
+.bubble-one { left: 18px; top: 18px; }
+.bubble-two { right: 12px; bottom: 36px; color: #658eb4; border-radius: 14px 14px 4px 14px; }
+.scene-heart {
+  position: absolute;
+  color: #f47d9f;
+  text-shadow: 0 4px 10px rgba(226, 82, 124, 0.2);
+  animation: heartBeat 2.5s ease-in-out infinite;
+}
+.heart-one { left: 7px; bottom: 52px; font-size: 19px; }
+.heart-two { right: 119px; top: 23px; font-size: 13px; animation-delay: -1.1s; }
+@keyframes pigBreathe {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-5px) scale(1.012); }
+}
+@keyframes pigFly {
+  0%, 100% { transform: translate(0, 0) rotate(4deg); }
+  50% { transform: translate(-8px, -14px) rotate(-3deg); }
+}
+@keyframes heartBeat {
+  0%, 100% { transform: scale(.9); opacity: .5; }
+  50% { transform: scale(1.15); opacity: 1; }
+}
+
+.memory-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.memory-chips span {
+  padding: 7px 11px;
+  border: 1px solid rgba(244, 114, 182, 0.11);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.62);
+  color: #806370;
+  font-size: 11px;
+  font-weight: 600;
+}
+.hero-footer-chip {
+  margin-top: 18px;
+  color: #bd5a79;
+  background: rgba(244, 114, 182, 0.09);
+}
+.pulse-dot { background-color: #f472b6; box-shadow: 0 0 0 0 rgba(244, 114, 182, .55); }
+
+.login-form-wrapper {
+  width: 46%;
+  box-sizing: border-box;
+  padding: 34px;
+  background: rgba(255, 255, 255, 0.34);
+}
+.form-card {
+  box-sizing: border-box;
+  padding: 30px 30px 24px;
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  border-radius: 28px;
+  background: rgba(255, 255, 255, 0.72);
+  box-shadow: 0 20px 45px rgba(133, 72, 96, 0.1);
+  backdrop-filter: blur(18px);
+}
+.card-header-actions { margin-bottom: 2px; }
+.theme-toggle-btn {
+  border-color: rgba(244, 114, 182, 0.15);
+  border-radius: 50%;
+  background: #fff6f9;
+  color: #d9567d;
+}
+.theme-toggle-btn:hover { color: #c43f69; background: #ffeaf1; }
+.form-header { margin-bottom: 22px; }
+.form-title {
+  color: #412f37;
+  font-size: 28px;
+}
+.form-title span { color: #ef6f94; }
+.form-subtitle { color: #927481; }
+
+.login-tabs {
+  border: 1px solid rgba(244, 114, 182, 0.09);
+  border-radius: 14px;
+  background: #fff3f7;
+}
+.tab-item { border-radius: 10px; color: #9a7c88; }
+.tab-item.active {
+  color: #d84f77;
+  background: #fff;
+  box-shadow: 0 4px 12px rgba(190, 78, 121, 0.1);
+}
+.demo-quick-bar {
+  border-color: rgba(244, 114, 182, 0.2);
+  border-radius: 12px;
+  background: rgba(255, 240, 246, 0.7);
+}
+.quick-label { color: #c15d7b; font-weight: 700; white-space: nowrap; }
+.quick-chip { border-color: rgba(244, 114, 182, 0.18); border-radius: 8px; }
+.quick-chip:hover { border-color: #ed7799; }
+.chip-user { color: #d64f77; }
+.chip-pass { color: #b06b9f; }
+.chip-action { background: #ec6b90; }
+
+.form-card :deep(.n-input) {
+  --n-border: 1px solid rgba(226, 180, 196, 0.58) !important;
+  --n-border-hover: 1px solid #f08aa8 !important;
+  --n-border-focus: 1px solid #ed6f94 !important;
+  --n-box-shadow-focus: 0 0 0 3px rgba(244, 114, 182, 0.1) !important;
+  --n-caret-color: #e85f86 !important;
+  border-radius: 12px !important;
+}
+.input-icon { color: #d18aa1; }
+.captcha-img-box { border-radius: 12px; border-color: rgba(226, 180, 196, 0.58); }
+.captcha-img-box:hover { border-color: #ed7799; }
+.captcha-refresh-overlay { background: rgba(226, 82, 124, 0.88); }
+.submit-btn {
+  border-radius: 14px !important;
+  background: linear-gradient(120deg, #f17799, #e8547f 55%, #da4774) !important;
+  box-shadow: 0 12px 25px -6px rgba(226, 82, 124, 0.42);
+}
+.submit-btn:hover:not(:disabled) {
+  box-shadow: 0 15px 30px -6px rgba(226, 82, 124, 0.5) !important;
+}
+.copyright { color: #b69aa5; }
+
+/* Cute dark mode */
+.is-dark.login-wrapper { background: linear-gradient(145deg, #21171d, #281821 48%, #162331); }
+.is-dark .login-container {
+  border-color: rgba(255, 255, 255, 0.08);
+  background: rgba(35, 24, 31, 0.68);
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.42);
+}
+.is-dark .login-hero {
+  border-right-color: rgba(251, 143, 171, 0.1);
+  background: linear-gradient(150deg, rgba(65, 36, 49, .72), rgba(54, 30, 42, .62), rgba(25, 46, 63, .68));
+}
+.is-dark .brand-name,
+.is-dark .hero-title,
+.is-dark .form-title { color: #fff2f6; }
+.is-dark .hero-subtitle,
+.is-dark .form-subtitle { color: #c8a9b5; }
+.is-dark .gradient-text {
+  background: linear-gradient(110deg, #fb8fab, #f9a8d4 55%, #93c5fd);
+  background-clip: text;
+  -webkit-background-clip: text;
+}
+.is-dark .memory-chips span,
+.is-dark .scene-bubble {
+  border-color: rgba(251, 143, 171, 0.1);
+  background: rgba(255, 255, 255, 0.065);
+  color: #e2bdca;
+}
+.is-dark .login-form-wrapper { background: rgba(18, 16, 20, 0.16); }
+.is-dark .form-card {
+  border-color: rgba(255, 255, 255, 0.08);
+  background: rgba(31, 25, 30, 0.72);
+  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.28);
+}
+.is-dark .login-tabs { border-color: rgba(251, 143, 171, .08); background: rgba(74, 45, 58, .52); }
+.is-dark .tab-item.active { color: #fb8fab; background: #432c37; }
+.is-dark .demo-quick-bar { border-color: rgba(251, 143, 171, .18); background: rgba(95, 46, 66, .22); }
+.is-dark .quick-chip { background: rgba(62, 42, 51, .9); border-color: rgba(251, 143, 171, .18); }
+.is-dark .chip-user { color: #fb8fab; }
+.is-dark .chip-pass { color: #d8a6d0; }
+
+@media (max-width: 960px) {
+  .login-container { max-width: 470px; }
+  .login-form-wrapper { width: 100%; padding: 18px; }
+  .form-card { padding: 26px 27px 22px; }
+  .mobile-logo img { filter: drop-shadow(0 8px 12px rgba(226, 82, 124, .2)); }
+}
+
+@media (max-width: 520px) {
+  .login-wrapper { align-items: flex-start; overflow-y: auto; }
+  .login-container { margin: 12px; border-radius: 26px; }
+  .login-form-wrapper { padding: 10px; }
+  .form-card { padding: 22px 18px 18px; border-radius: 22px; }
+  .card-header-actions { margin-bottom: 0; }
+  .form-header { margin-bottom: 18px; }
+  .login-tabs { margin-bottom: 16px; }
+  .tab-item { padding: 9px 8px; font-size: 12px; }
+  .demo-quick-bar { align-items: flex-start; flex-direction: column; }
+  .quick-chip { width: 100%; justify-content: center; }
+  .captcha-group { gap: 8px; }
+  .captcha-img-box { width: 104px; }
+  .form-footer { margin-top: 24px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .floating-deco,
+  .pig-main,
+  .pig-flying,
+  .scene-heart { animation: none; }
 }
 </style>
 

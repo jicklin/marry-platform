@@ -140,6 +140,16 @@ docker run -d --name marry-redis -p 6379:6379 redis:7-alpine
 
 A multi-stage `Dockerfile` lives in `marry-platform-admin/Dockerfile` for the backend.
 
+## 💾 Backup
+
+PostgreSQL and uploaded files can be encrypted and backed up incrementally to a WebDAV provider such as InfiniCloud:
+
+```bash
+./scripts/backup-webdav.sh all
+```
+
+See [`docs/backup.md`](docs/backup.md) for rclone/restic setup, retention, scheduling, and restore instructions.
+
 ## 📊 Permission Keys Reference
 
 Button permissions follow the pattern `<module>:<resource>:<action>`:

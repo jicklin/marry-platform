@@ -1,0 +1,23 @@
+﻿# ============================================================
+# LOCAL BUILD: skip the Maven build stage entirely.
+# Use this when you have already run `mvn -Pprod package` on the host.
+# The jar is expected at marry-platform-admin/target/marry-platform-admin.jar.
+#
+# Invoke via deploy/docker/up.ps1 -LocalJar (or -LocalJars) so the right
+# Dockerfile is selected automatically.
+# ============================================================
+
+FROM eclipse-temurin:17-jre-alpine
+RUN addgroup -S spring && adduser -S spring -G spring
+
+WORKDIR /app
+RUN mkdir -p /app/logs && chown -R spring:spring /app/logs
+COPY marry-platform-admin/target/marry-platform-admin.jar /app/app.jar
+
+ENV JAVA_OPTS="-XX:+UseG1GC -XX:MaxRAMPercentage=75.0 -Dfile.encoding=UTF-8"
+ENV SPRING_PROFILES_ACTIVE=prod
+EXPOSE 10045
+
+USER spring:spring
+HEALTHCHECK --interval=30s --timeout=3s CMD wget -qO- http://localhost:10045/api/actuator/health || exit 1
+ENTRYPOINT ["sh", "-c", "exec java $JAVA_OPTS -jar /app/app.jar"]

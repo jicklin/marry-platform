@@ -1,0 +1,16 @@
+# ============================================================
+# LOCAL-JAR OVERRIDE — merges on top of docker-compose.yml.
+# Run with: docker compose -f docker-compose.yml -f docker-compose.local.yml up
+# or simply: ./up.ps1 -LocalJar (the script picks these up automatically).
+#
+# The frontend still goes through the Maven-less nginx build, but its
+# Dockerfile is identical (already minimal — just pnpm + nginx).
+# ============================================================
+
+services:
+
+  backend:
+    build:
+      context: ../..
+      dockerfile: deploy/docker/Dockerfile.local
+    image: marry-platform-backend:local

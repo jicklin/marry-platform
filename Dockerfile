@@ -1,0 +1,46 @@
+﻿# ============================================================
+# Backend Dockerfile for marry-platform-admin
+# (Build from repo root: docker build -t marry-platform-backend -f Dockerfile .)
+# ============================================================
+
+# ---- build stage ----
+FROM maven:3.9-eclipse-temurin-17 AS build
+WORKDIR /src
+
+# Pin the Aliyun mirror at the settings level so every Maven request
+# (plugins, dependencies, transitive POMs) resolves through Aliyun.
+# This avoids the build container being blocked by Maven Central latency.
+COPY deploy/docker/maven-settings.xml /root/.m2/settings.xml
+
+# Copy the root pom.xml + every child module into the build context.
+# mvn resolves child modules via <module> entries in /src/pom.xml, so
+# every directory must be present before we invoke the build.
+COPY pom.xml ./
+COPY marry-platform-common        marry-platform-common
+COPY marry-platform-api           marry-platform-api
+COPY marry-platform-domain        marry-platform-domain
+COPY marry-platform-persistence   marry-platform-persistence
+COPY marry-platform-security      marry-platform-security
+COPY marry-platform-system        marry-platform-system
+COPY marry-platform-log           marry-platform-log
+COPY marry-platform-monitor       marry-platform-monitor
+COPY marry-platform-generator     marry-platform-generator
+COPY marry-platform-admin         marry-platform-admin
+
+RUN mvn -B -ntp -DskipTests -Pprod -pl marry-platform-admin -am package
+
+# ---- run stage ----
+FROM eclipse-temurin:17-jre-alpine
+RUN addgroup -S spring && adduser -S spring -G spring
+
+WORKDIR /app
+RUN mkdir -p /app/logs && chown -R spring:spring /app/logs
+COPY --from=build /src/marry-platform-admin/target/marry-platform-admin.jar /app/app.jar
+
+ENV JAVA_OPTS="-XX:+UseG1GC -XX:MaxRAMPercentage=75.0 -Dfile.encoding=UTF-8"
+ENV SPRING_PROFILES_ACTIVE=prod
+EXPOSE 10045
+
+USER spring:spring
+HEALTHCHECK --interval=30s --timeout=3s CMD wget -qO- http://localhost:10045/api/actuator/health || exit 1
+ENTRYPOINT ["sh", "-c", "exec java $JAVA_OPTS -jar /app/app.jar"]

@@ -1,0 +1,21 @@
+$action = New-ScheduledTaskAction -Execute 'powershell.exe' -Argument '-NoProfile -ExecutionPolicy Bypass -File "D:\myprojects\marry-platform\scripts\backup-to-smb.ps1"'
+$trigger = New-ScheduledTaskTrigger -Daily -At '02:00'
+$settings = New-ScheduledTaskSettingsSet -StartWhenAvailable -ExecutionTimeLimit (New-TimeSpan -Hours 2)
+Register-ScheduledTask -TaskName 'marry-platform-backup' -Action $action -Trigger $trigger -Settings $settings -Description 'Backup marry-platform PG + uploads to SMB' -User 'SYSTEM' -RunLevel Highest
+
+各参数说明
+参数	含义
+-Execute 'powershell.exe'	跑的程序
+-Argument '-NoProfile ...'	脚本路径
+-Daily -At '02:00'	每天凌晨 2 点跑
+-StartWhenAvailable	错过时间后开机补跑
+-ExecutionTimeLimit 2h	最多跑 2 小时超时
+-User 'SYSTEM' -RunLevel Highest	以 SYSTEM 身份跑（权限最高，能访问 SMB）
+
+
+验证任务
+Get-ScheduledTask -TaskName 'marry-platform-backup'
+手动触发测试
+Start-ScheduledTask -TaskName 'marry-platform-backup'
+删除任务
+Unregister-ScheduledTask -TaskName 'marry-platform-backup' -Confirm:$false

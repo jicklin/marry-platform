@@ -1,0 +1,151 @@
+﻿# ============================================================
+# marry-platform — one-command local stack
+#
+# Usage:
+#   cp deploy/docker/.env.example deploy/docker/.env       # edit if needed
+#   docker compose -f deploy/docker/docker-compose.yml up -d --build
+#
+# Layout (single bridge network `marry-net`):
+#   postgres  (16-alpine)  — Flyway migrations auto-applied on first start
+#   redis     (7-alpine)
+#   backend   (Spring Boot, built from ./Dockerfile)
+#   frontend  (Vue 3 SPA, nginx, built from marry-platform-frontend/Dockerfile)
+#
+# Persistent state lives on the host filesystem so it survives `down`:
+#   ${PG_DATA_PATH}      — Postgres data directory     (default: ./.pgdata)
+#   ${UPLOADS_PATH}      — User-uploaded files        (default: ./.uploads)
+#   named volume `redis_data` — Redis AOF/RDB
+# ============================================================
+
+name: marry-platform
+
+services:
+
+  # ------------------------------------------------------------
+  # PostgreSQL 16 — schema + seed applied from db-init/00-flyway.sql
+  # ------------------------------------------------------------
+  postgres:
+    image: postgres:16-alpine
+    container_name: marry-postgres
+    restart: unless-stopped
+    environment:
+      TZ: Asia/Shanghai
+      POSTGRES_DB: ${POSTGRES_DB:-marry_platform}
+      POSTGRES_USER: ${POSTGRES_USER:-marry}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-marry123}
+      # Performance / sane defaults; tweak in .env if needed.
+      POSTGRES_INITDB_ARGS: "--encoding=UTF-8 --locale=C"
+    volumes:
+      # Persistent database files — stored in a docker named volume so the
+      # NTFS host filesystem doesn't reject Linux chmod() calls. The volume
+      # lives in the docker-desktop-data WSL2 distro (ext4).
+      - marry-pg-data:/var/lib/postgresql/data
+      # Note: schema is now imported via `import-dump.ps1` after the stack
+      # comes up; we don't auto-run any SQL on first start.
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-marry} -d ${POSTGRES_DB:-marry_platform}"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    networks:
+      - marry-net
+
+  # ------------------------------------------------------------
+  # Redis 7 — JWT blacklist, online users, rate limiting
+  # ------------------------------------------------------------
+  redis:
+    image: redis:7-alpine
+    container_name: marry-redis
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    networks:
+      - marry-net
+
+  # ------------------------------------------------------------
+  # Backend — Spring Boot admin (port 10045 inside the network only)
+  # ------------------------------------------------------------
+  backend:
+    build:
+      context: ../..
+      dockerfile: Dockerfile
+    image: marry-platform-backend:local
+    container_name: marry-backend
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      TZ: Asia/Shanghai
+      SPRING_PROFILES_ACTIVE: prod
+      # Datasource — Docker DNS name `postgres`, NOT localhost
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-marry_platform}
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-marry}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-marry123}
+      SPRING_DATASOURCE_DRIVER_CLASS_NAME: org.postgresql.Driver
+      # Redis
+      SPRING_DATA_REDIS_HOST: redis
+      SPRING_DATA_REDIS_PORT: 6379
+      # File storage (uploaded user content) — bind mount on the host
+      MARRY_FILE_PATH: /srv/marry/uploads
+      MARRY_FILE_BUCKET: ${MARRY_FILE_BUCKET:-platform}
+      MARRY_FILE_EVENT_ROOT: ${MARRY_FILE_EVENT_ROOT:-events}
+      MARRY_FILE_PUBLIC_BASE: ${MARRY_FILE_PUBLIC_BASE:-/api/static/upload/}
+      # JWT — override in .env for production
+      JWT_SECRET: ${JWT_SECRET:-please-change-me-in-.env-at-least-32-chars}
+      # JVM tuning
+      JAVA_OPTS: "-XX:+UseG1GC -XX:MaxRAMPercentage=75.0 -Dfile.encoding=UTF-8"
+    volumes:
+      # Persistent upload directory — change UPLOADS_PATH to move it to a
+      # different disk (e.g. D:\my-data\marry-uploads).
+      - ${UPLOADS_PATH:-./.uploads}:/srv/marry/uploads
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:10045/api/actuator/health >/dev/null 2>&1 || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 60s
+    networks:
+      - marry-net
+
+  # ------------------------------------------------------------
+  # Frontend — Vue 3 SPA served by Nginx on host port 5173 (Vite default)
+  # ------------------------------------------------------------
+  frontend:
+    build:
+      context: ../..
+      dockerfile: marry-platform-frontend/Dockerfile
+    image: marry-platform-frontend:local
+    container_name: marry-frontend
+    restart: unless-stopped
+    depends_on:
+      backend:
+        condition: service_healthy
+    ports:
+      # Host:Container — change the left side if 5173 is taken on your machine.
+      - "${FRONTEND_PORT:-5173}:5173"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:5173/ >/dev/null 2>&1 || exit 1"]
+      interval: 15s
+      timeout: 3s
+      retries: 10
+    networks:
+      - marry-net
+
+networks:
+  marry-net:
+    driver: bridge
+
+volumes:
+  redis_data:
+    name: marry-redis-data
+  marry-pg-data:
+    name: marry-pg-data

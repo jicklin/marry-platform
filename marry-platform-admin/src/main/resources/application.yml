@@ -17,8 +17,8 @@ spring:
     # survives custom ObjectMapper overrides.
   servlet:
     multipart:
-      max-file-size: 100MB
-      max-request-size: 100MB
+      max-file-size: 200MB
+      max-request-size: 200MB
   flyway:
     enabled: false
     baseline-on-migrate: true

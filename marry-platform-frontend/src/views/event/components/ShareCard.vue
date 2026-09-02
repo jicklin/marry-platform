@@ -32,7 +32,7 @@
       <div class="sc-footer">✦ 记录于 marry 成长册 ✦</div>
     </div>
 
-    <NModal v-model:show="previewVisible" preset="card" title="分享成长图" style="width: 440px" class="share-preview-modal">
+    <NModal v-model:show="previewVisible" preset="card" title="分享成长图" style="width: min(440px, 92vw)" class="share-preview-modal">
       <div class="preview-wrap">
         <NImage :src="dataUrl" class="preview-img" />
       </div>

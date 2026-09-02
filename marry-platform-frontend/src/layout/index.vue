@@ -1,6 +1,8 @@
 <template>
-  <NLayout has-sider position="absolute" class="app-layout">
+  <NLayout :has-sider="!isMobile" position="absolute" class="app-layout">
+    <!-- Desktop Sidebar -->
     <NLayoutSider
+      v-if="!isMobile"
       bordered
       collapse-mode="width"
       :collapsed="appStore.collapsed"
@@ -32,16 +34,54 @@
       />
     </NLayoutSider>
 
+    <!-- Mobile Drawer Sidebar -->
+    <NDrawer
+      v-if="isMobile"
+      v-model:show="mobileDrawerVisible"
+      placement="left"
+      :width="260"
+      class="mobile-nav-drawer"
+    >
+      <NDrawerContent :native-scrollbar="false" body-content-style="padding: 0;">
+        <div class="logo-bar" @click="handleMobileLogoClick">
+          <div class="logo-badge">
+            <img src="/favicon.svg" alt="Marry Platform" class="site-logo" />
+          </div>
+          <div class="logo-info">
+            <span class="logo-text">marry-platform</span>
+            <span class="logo-version">PRO</span>
+          </div>
+        </div>
+        <NMenu
+          mode="vertical"
+          :indent="18"
+          :value="activeMenuKey"
+          :options="menuOptions"
+          @update:value="onMenuSelect"
+        />
+      </NDrawerContent>
+    </NDrawer>
+
     <NLayout class="app-main-layout">
       <NLayoutHeader bordered class="header-bar">
         <div class="header-left">
-          <Breadcrumb />
+          <NButton
+            v-if="isMobile"
+            quaternary
+            circle
+            size="medium"
+            class="header-action-btn mobile-menu-btn"
+            @click="mobileDrawerVisible = true"
+          >
+            <NIcon size="20"><MenuOutline /></NIcon>
+          </NButton>
+          <Breadcrumb class="header-breadcrumb" />
         </div>
 
         <div class="header-right">
           <NTooltip trigger="hover">
             <template #trigger>
-              <NButton quaternary circle size="medium" class="header-action-btn" @click="toggleFullScreen">
+              <NButton quaternary circle size="medium" class="header-action-btn hide-on-mobile" @click="toggleFullScreen">
                 <NIcon size="18"><ExpandOutline v-if="!isFullscreen" /><ContractOutline v-else /></NIcon>
               </NButton>
             </template>
@@ -91,8 +131,8 @@
                 <NAvatar round size="small" class="user-avatar" :src="userStore.userInfo?.avatar">
                   {{ userStore.userInfo?.nickName?.charAt(0) || 'U' }}
                 </NAvatar>
-                <span class="user-name">{{ userStore.userInfo?.nickName || userStore.userInfo?.username }}</span>
-                <NIcon size="14" class="user-arrow"><ChevronDownOutline /></NIcon>
+                <span class="user-name hide-on-mobile">{{ userStore.userInfo?.nickName || userStore.userInfo?.username }}</span>
+                <NIcon size="14" class="user-arrow hide-on-mobile"><ChevronDownOutline /></NIcon>
               </div>
             </template>
 
@@ -130,9 +170,9 @@
 </template>
 
 <script setup lang="ts">
-import { computed, h, ref } from 'vue'
+import { computed, h, onBeforeUnmount, onMounted, ref } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import { NIcon, NBadge, NTooltip, NPopover } from 'naive-ui'
+import { NIcon, NBadge, NTooltip, NPopover, NDrawer, NDrawerContent } from 'naive-ui'
 import {
   SettingsOutline,
   PersonOutline,
@@ -165,6 +205,27 @@ const appStore = useAppStore()
 const userStore = useUserStore()
 const permissionStore = usePermissionStore()
 const isFullscreen = ref(false)
+
+const isMobile = ref(false)
+const mobileDrawerVisible = ref(false)
+
+function checkMobile() {
+  isMobile.value = window.innerWidth <= 768
+}
+
+onMounted(() => {
+  checkMobile()
+  window.addEventListener('resize', checkMobile)
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener('resize', checkMobile)
+})
+
+function handleMobileLogoClick() {
+  mobileDrawerVisible.value = false
+  router.push('/')
+}
 
 function toggleFullScreen() {
   if (!document.fullscreenElement) {
@@ -245,6 +306,9 @@ const activeMenuKey = computed(() => {
 })
 
 function onMenuSelect(_key: string, option: any) {
+  if (isMobile.value) {
+    mobileDrawerVisible.value = false
+  }
   if (option.path) router.push(option.path)
 }
 
@@ -263,6 +327,10 @@ async function handleLogout() {
   background-color: var(--bg-card);
   border-right: 1px solid var(--border-soft) !important;
   z-index: 10;
+}
+
+.mobile-nav-drawer :deep(.n-drawer-body-content-wrapper) {
+  background-color: var(--bg-card);
 }
 
 .logo-bar {
@@ -334,10 +402,18 @@ async function handleLogout() {
   border-bottom: 1px solid var(--border-soft) !important;
 }
 
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
 .header-right {
   display: flex;
   align-items: center;
   gap: 8px;
+  flex-shrink: 0;
 }
 
 .header-action-btn {
@@ -496,5 +572,21 @@ async function handleLogout() {
 .fade-slide-leave-to {
   opacity: 0;
   transform: translateY(-8px);
+}
+
+@media (max-width: 768px) {
+  .header-bar {
+    padding: 0 12px;
+    height: 54px;
+  }
+  .main-content {
+    padding: 12px 10px;
+  }
+  .hide-on-mobile {
+    display: none !important;
+  }
+  .user-info-btn {
+    padding: 2px;
+  }
 }
 </style>

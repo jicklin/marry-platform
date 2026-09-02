@@ -11,10 +11,21 @@
       </div>
 
       <div class="hero-copy">
-        <div class="hero-kicker"><span class="kicker-dot" /> GROWTH ALBUM</div>
-        <h2 class="hero-title">宝贝成长记 <span class="title-sparkle">✦</span></h2>
+        <div class="hero-top-row">
+          <div class="hero-kicker"><span class="kicker-dot" /> GROWTH ALBUM</div>
+          <div class="hero-counter-badge mobile-only">
+            <strong>{{ totalCount }}</strong>
+            <span>个成长片段</span>
+          </div>
+        </div>
+        <div class="hero-title-row">
+          <h2 class="hero-title">宝贝成长记 <span class="title-sparkle">✦</span></h2>
+          <div class="hero-mini-pig mobile-only">
+            <img :src="flowerPigUrl" alt="小猪" />
+          </div>
+        </div>
         <p class="hero-sub">把闪闪发光的小日子，认真收藏进时光里。</p>
-        <div class="hero-meta">
+        <div class="hero-meta desktop-only">
           <div class="hero-counter">
             <strong>{{ totalCount }}</strong>
             <span>个成长片段</span>
@@ -25,7 +36,7 @@
       </div>
 
       <div class="hero-visual">
-        <div class="pig-picture">
+        <div class="pig-picture desktop-only">
           <span class="picture-star star-one">✦</span>
           <span class="picture-star star-two">✦</span>
           <img :src="flowerPigUrl" alt="戴小花的可爱小猪" />
@@ -40,21 +51,29 @@
 
     <!-- Filters -->
     <NCard class="filter-card" :bordered="false">
-      <NSpace align="center" wrap :size="[12, 10]">
-        <NInput v-model:value="query.keyword" placeholder="搜索标题 / 内容…" clearable style="width: 220px"
-                @keyup.enter="search">
-          <template #prefix><NIcon size="14" style="opacity:.45"><SearchOutline /></NIcon></template>
-        </NInput>
-        <NSelect v-model:value="query.category" placeholder="全部分类" clearable style="width: 130px" :options="categoryOptions" />
-        <NSelect v-model:value="query.importance" placeholder="重要程度" clearable style="width: 130px" :options="importanceOptions" />
-        <NRadioGroup v-model:value="range" size="small">
-          <NRadioButton value="all">全部</NRadioButton>
-          <NRadioButton value="week">近一周</NRadioButton>
-          <NRadioButton value="month">本月</NRadioButton>
-        </NRadioGroup>
-        <NButton type="primary" @click="search">搜索</NButton>
-        <NButton @click="reset">重置</NButton>
-      </NSpace>
+      <div class="filter-container">
+        <div class="filter-row-top">
+          <NInput v-model:value="query.keyword" placeholder="搜索标题 / 内容…" clearable class="filter-search-input"
+                  @keyup.enter="search">
+            <template #prefix><NIcon size="14" style="opacity:.45"><SearchOutline /></NIcon></template>
+          </NInput>
+          <div class="filter-selects">
+            <NSelect v-model:value="query.category" placeholder="全部分类" clearable class="filter-select" :options="categoryOptions" />
+            <NSelect v-model:value="query.importance" placeholder="重要程度" clearable class="filter-select" :options="importanceOptions" />
+          </div>
+        </div>
+        <div class="filter-row-bottom">
+          <NRadioGroup v-model:value="range" size="small" class="filter-range-group">
+            <NRadioButton value="all">全部</NRadioButton>
+            <NRadioButton value="week">近一周</NRadioButton>
+            <NRadioButton value="month">本月</NRadioButton>
+          </NRadioGroup>
+          <div class="filter-btns">
+            <NButton type="primary" class="filter-btn" @click="search">搜索</NButton>
+            <NButton class="filter-btn" @click="reset">重置</NButton>
+          </div>
+        </div>
+      </div>
     </NCard>
 
     <!-- Timeline -->
@@ -101,7 +120,7 @@
                   <small>{{ mediaItems(ev).length }} 项</small>
                 </div>
                 <NImageGroup>
-                  <div class="tl-media-grid">
+                  <div class="tl-media-grid" :class="`grid-count-${Math.min(mediaItems(ev).length, 3)}`">
                     <template v-for="(media, i) in mediaItems(ev)" :key="`${media.type}-${media.url}-${i}`">
                       <NImage v-if="media.type === 'image'" :src="media.url" :alt="media.name || ev.title"
                               object-fit="cover" lazy class="tl-media-image" />
@@ -150,35 +169,39 @@
 
     <!-- Edit modal -->
     <NModal v-model:show="editVisible" preset="card" :title="form.id ? '编辑事件' : '记录新事件'"
-            style="width: 960px" class="event-editor-modal">
+            style="width: min(960px, 94vw)" class="event-editor-modal">
       <NForm :model="form" label-placement="top">
         <NFormItem label="标题" required>
           <NInput v-model:value="form.title" placeholder="如：开学第一天" maxlength="60" show-count />
         </NFormItem>
-        <NFormItem label="日期" required>
-          <NDatePicker v-model:value="dateTs" type="date" style="width: 180px" placeholder="事件发生日期" />
-        </NFormItem>
-        <NFormItem label="分类">
-          <NSelect v-model:value="form.category" placeholder="选择分类" :options="categoryOptions" style="width: 180px" />
-        </NFormItem>
-        <NFormItem label="重要程度">
-          <NRadioGroup v-model:value="form.importance">
-            <NRadioButton :value="0">普通</NRadioButton>
-            <NRadioButton :value="1">重要</NRadioButton>
-            <NRadioButton :value="2">里程碑</NRadioButton>
-          </NRadioGroup>
-        </NFormItem>
-        <NFormItem label="心情">
-          <NInput v-model:value="form.mood" placeholder="如：开心 😊" maxlength="50" style="width: 260px" />
-        </NFormItem>
+        <div class="form-grid-row">
+          <NFormItem label="日期" required class="form-grid-item">
+            <NDatePicker v-model:value="dateTs" type="date" class="full-width" placeholder="事件发生日期" />
+          </NFormItem>
+          <NFormItem label="分类" class="form-grid-item">
+            <NSelect v-model:value="form.category" placeholder="选择分类" :options="categoryOptions" class="full-width" />
+          </NFormItem>
+        </div>
+        <div class="form-grid-row">
+          <NFormItem label="重要程度" class="form-grid-item">
+            <NRadioGroup v-model:value="form.importance" class="full-width-radio">
+              <NRadioButton :value="0">普通</NRadioButton>
+              <NRadioButton :value="1">重要</NRadioButton>
+              <NRadioButton :value="2">里程碑</NRadioButton>
+            </NRadioGroup>
+          </NFormItem>
+          <NFormItem label="心情" class="form-grid-item">
+            <NInput v-model:value="form.mood" placeholder="如：开心 😊" maxlength="50" class="full-width" />
+          </NFormItem>
+        </div>
         <NFormItem label="标签">
           <NDynamicTags v-model:value="tagList" :max="8" />
         </NFormItem>
         <NFormItem label="文件目录（图片/附件将存到该目录，方便在服务器上按事件查看）">
-          <NSpace align="center">
-            <NInput v-model:value="form.dirName" placeholder="如：2026-09-01_开学第一天" style="width: 340px" />
+          <div class="dir-input-row">
+            <NInput v-model:value="form.dirName" placeholder="如：2026-09-01_开学第一天" class="dir-input" />
             <NButton size="small" @click="autoDir">自动生成</NButton>
-          </NSpace>
+          </div>
         </NFormItem>
         <NFormItem label="记录内容（文字中间可直接插入图片 / 视频）">
           <MdEditor v-model="form.content" :theme="editorTheme" :on-upload-img="handleUploadImg"
@@ -217,7 +240,7 @@
 
     <!-- Video preview -->
     <NModal v-model:show="videoPreviewVisible" preset="card" :title="videoPreviewTitle"
-            style="width: min(900px, 92vw)" class="video-preview-modal">
+            style="width: min(900px, 94vw)" class="video-preview-modal">
       <div class="video-preview-wrap">
         <video v-if="videoPreviewVisible" :src="videoPreviewUrl" controls autoplay preload="metadata" />
       </div>
@@ -586,6 +609,13 @@ onMounted(load)
   gap: 18px;
 }
 
+.mobile-only {
+  display: none !important;
+}
+.desktop-only {
+  display: flex !important;
+}
+
 /* ===================== Growth album header ===================== */
 .hero {
   position: relative;
@@ -644,11 +674,51 @@ onMounted(load)
   min-width: 0;
   flex: 1;
 }
+
+.hero-top-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.hero-title-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.hero-mini-pig {
+  width: 36px;
+  height: 36px;
+  filter: drop-shadow(0 4px 8px rgba(240, 101, 134, 0.25));
+}
+.hero-mini-pig img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.hero-counter-badge {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
+  background: rgba(240, 101, 134, 0.12);
+  color: #d75d83;
+  padding: 2px 8px;
+  border-radius: 99px;
+  font-size: 11px;
+}
+.hero-counter-badge strong {
+  font-size: 14px;
+  color: #e2527c;
+  font-weight: 800;
+}
+
 .hero-kicker {
   display: inline-flex;
   align-items: center;
   gap: 7px;
-  margin-bottom: 8px;
   color: #d75d83;
   font-size: 10px;
   font-weight: 800;
@@ -664,7 +734,7 @@ onMounted(load)
 .hero-title {
   margin: 0;
   color: #3f2b34;
-  font-size: clamp(25px, 2.2vw, 32px);
+  font-size: clamp(23px, 2.2vw, 32px);
   font-weight: 800;
   line-height: 1.25;
   letter-spacing: -0.8px;
@@ -682,10 +752,10 @@ onMounted(load)
 }
 .hero-sub {
   max-width: 520px;
-  margin: 8px 0 0;
+  margin: 6px 0 0;
   color: #866875;
   font-size: 14px;
-  line-height: 1.7;
+  line-height: 1.6;
 }
 .hero-meta {
   display: flex;
@@ -759,9 +829,58 @@ onMounted(load)
 /* ===================== Filter ===================== */
 .filter-card {
   border-radius: 16px;
-  background: rgba(255, 255, 255, 0.7);
+  background: rgba(255, 255, 255, 0.75);
   backdrop-filter: blur(10px);
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
+}
+
+.filter-container {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.filter-row-top {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.filter-search-input {
+  flex: 1.5;
+  min-width: 200px;
+}
+
+.filter-selects {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  min-width: 220px;
+}
+
+.filter-select {
+  flex: 1;
+  min-width: 100px;
+}
+
+.filter-row-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.filter-range-group {
+  display: inline-flex;
+}
+
+.filter-btns {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 /* ===================== Timeline ===================== */
@@ -1008,7 +1127,7 @@ html.dark .tl-content :deep(.md-editor) {
 }
 .tl-media-image :deep(img) {
   width: 100% !important;
-  height: 108px !important;
+  height: 100% !important;
   object-fit: cover;
 }
 .tl-media-image:hover {
@@ -1136,7 +1255,36 @@ html.dark .tl-content :deep(.md-editor) {
 }
 .tl-actions { flex-shrink: 0; }
 
-/* Editor */
+/* Editor & Modal Form Layout */
+.form-grid-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+.form-grid-item {
+  margin-bottom: 0;
+}
+.full-width {
+  width: 100% !important;
+}
+.full-width-radio {
+  width: 100%;
+  display: flex;
+}
+.full-width-radio :deep(.n-radio-button) {
+  flex: 1;
+  text-align: center;
+}
+.dir-input-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+}
+.dir-input {
+  flex: 1;
+}
+
 .event-md-editor {
   width: 100%;
   height: 420px;
@@ -1192,33 +1340,156 @@ html.dark .tl-content :deep(.md-editor) {
   .hero-visual { gap: 12px; }
 }
 
-@media (max-width: 720px) {
+@media (max-width: 768px) {
+  .mobile-only {
+    display: inline-flex !important;
+  }
+  .desktop-only {
+    display: none !important;
+  }
+
   .hero {
     min-height: auto;
-    align-items: flex-start;
-    padding: 24px;
-  }
-  .hero-visual { align-self: center; }
-  .pig-picture { display: none; }
-  .hero-wish, .meta-divider { display: none; }
-}
-
-@media (max-width: 520px) {
-  .hero {
     flex-direction: column;
-    gap: 20px;
-    padding: 22px 20px;
-    border-radius: 20px;
+    align-items: stretch;
+    gap: 14px;
+    padding: 18px 16px;
+    border-radius: 18px;
   }
-  .hero-sub { font-size: 13px; }
-  .hero-meta { margin-top: 14px; }
-  .hero-visual { width: 100%; }
-  .hero-add-btn { width: 100%; }
-  .tl-media-section { padding: 9px; }
-  .tl-media-grid { grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 7px; }
+  .hero-title {
+    font-size: 20px;
+  }
+  .hero-sub {
+    font-size: 13px;
+    margin: 4px 0 0;
+  }
+  .hero-visual {
+    width: 100%;
+  }
+  .hero-add-btn {
+    width: 100%;
+    height: 42px;
+    font-size: 15px;
+  }
+
+  .filter-card {
+    padding: 4px;
+    border-radius: 14px;
+  }
+  .filter-row-top {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+  .filter-selects {
+    width: 100%;
+  }
+  .filter-row-bottom {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+  .filter-range-group {
+    width: 100%;
+    display: flex;
+  }
+  .filter-range-group :deep(.n-radio-button) {
+    flex: 1;
+    text-align: center;
+  }
+  .filter-btns {
+    width: 100%;
+  }
+  .filter-btn {
+    flex: 1;
+  }
+
+  .timeline-wrap {
+    padding: 0 0 24px;
+  }
+  .timeline-list {
+    padding-left: 18px;
+  }
+  .timeline-list::before {
+    left: 5px;
+  }
+  .tl-dot {
+    left: -18px;
+    top: 18px;
+    width: 12px;
+    height: 12px;
+  }
+  .month-divider {
+    margin: 18px 0 12px;
+    gap: 10px;
+  }
+  .month-badge {
+    font-size: 13px;
+    padding: 3px 10px;
+  }
+  .tl-card {
+    padding: 13px 12px;
+    border-radius: 12px;
+  }
+  .tl-title {
+    font-size: 16px;
+    margin: 8px 0 6px;
+  }
+  .tl-content {
+    font-size: 13.5px;
+  }
+
+  .tl-media-section {
+    padding: 8px;
+    border-radius: 10px;
+    margin-top: 10px;
+  }
+  .tl-media-grid.grid-count-1 {
+    grid-template-columns: 1fr;
+  }
+  .tl-media-grid.grid-count-2 {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 6px;
+  }
+  .tl-media-grid.grid-count-3,
+  .tl-media-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+  }
   .tl-media-image,
-  .tl-video-thumb { height: 92px; }
-  .tl-media-image :deep(img) { height: 92px !important; }
+  .tl-video-thumb {
+    height: auto;
+    aspect-ratio: 1/1;
+  }
+  .tl-media-grid.grid-count-1 .tl-media-image,
+  .tl-media-grid.grid-count-1 .tl-video-thumb {
+    aspect-ratio: 16/9;
+    max-height: 180px;
+  }
+
+  .tl-foot {
+    margin-top: 10px;
+    padding-top: 10px;
+    gap: 8px;
+  }
+  .tl-foot-left {
+    width: 100%;
+    gap: 6px;
+  }
+  .tl-actions {
+    width: 100%;
+    display: flex;
+    justify-content: flex-end;
+    gap: 4px;
+  }
+
+  .form-grid-row {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+  .event-md-editor {
+    height: 320px;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -1238,6 +1509,13 @@ html.dark .hero-title { color: #fff1f5; }
 html.dark .hero-sub { color: #c9aeb9; }
 html.dark .hero-counter { color: #bfa4af; }
 html.dark .hero-counter strong { color: #fb8fab; }
+html.dark .hero-counter-badge {
+  background: rgba(240, 101, 134, 0.22);
+  color: #f9a8c0;
+}
+html.dark .hero-counter-badge strong {
+  color: #fb8fab;
+}
 html.dark .hero-wish { color: #aa929d; }
 html.dark .meta-divider { background: rgba(251, 143, 171, 0.18); }
 html.dark .pig-picture {

@@ -43,6 +43,10 @@ const items = computed<string[]>(() => {
 .custom-breadcrumb {
   display: flex;
   align-items: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 320px;
 }
 
 .ancestor {
@@ -63,5 +67,18 @@ const items = computed<string[]>(() => {
 .separator-icon {
   color: var(--fg-muted);
   opacity: 0.6;
+}
+
+@media (max-width: 600px) {
+  .custom-breadcrumb {
+    max-width: 140px;
+    font-size: 13px;
+  }
+  .ancestor {
+    display: none;
+  }
+  .separator-icon {
+    display: none;
+  }
 }
 </style>

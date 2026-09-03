@@ -165,6 +165,23 @@
       <div v-if="loading" class="loading-state">
         <NSpin size="small" />
       </div>
+
+      <!-- Pagination -->
+      <div v-if="totalCount > 0" class="pagination-wrap">
+        <NPagination
+          v-model:page="query.pageNum"
+          v-model:page-size="query.pageSize"
+          :item-count="totalCount"
+          show-size-picker
+          :page-sizes="[3, 5, 10, 20, 50]"
+          @update:page="handlePageChange"
+          @update:page-size="handlePageSizeChange"
+        >
+          <template #prefix="{ itemCount }">
+            <span class="pagination-count">共 {{ itemCount }} 条</span>
+          </template>
+        </NPagination>
+      </div>
     </div>
 
     <!-- Edit modal -->
@@ -256,7 +273,7 @@ import { computed, h, onMounted, ref } from 'vue'
 import {
   NCard, NSpace, NButton, NModal, NForm, NFormItem, NInput, NSelect, NRadioGroup,
   NRadioButton, NDatePicker, NTag, NImage, NImageGroup, NIcon, NSpin, NEmpty,
-  NDynamicTags, NUpload, useMessage, useDialog
+  NDynamicTags, NUpload, NPagination, useMessage, useDialog
 } from 'naive-ui'
 import { MdEditor, MdPreview, NormalToolbar } from 'md-editor-v3'
 import 'md-editor-v3/lib/style.css'
@@ -312,7 +329,7 @@ function categoryColor(cat: string) {
 const rows = ref<ChildEvent[]>([])
 const loading = ref(false)
 const totalCount = ref(0)
-const query = ref<Record<string, any>>({ pageNum: 1, pageSize: 100 })
+const query = ref<Record<string, any>>({ pageNum: 1, pageSize: 3 })
 const range = ref<'all' | 'week' | 'month'>('all')
 
 async function load() {
@@ -335,8 +352,19 @@ function search() {
 }
 
 function reset() {
-  query.value = { pageNum: 1, pageSize: 100 }
+  query.value = { pageNum: 1, pageSize: 3 }
   range.value = 'all'
+  load()
+}
+
+function handlePageChange(p: number) {
+  query.value.pageNum = p
+  load()
+}
+
+function handlePageSizeChange(size: number) {
+  query.value.pageSize = size
+  query.value.pageNum = 1
   load()
 }
 
@@ -1325,12 +1353,29 @@ html.dark .tl-content :deep(.md-editor) {
   gap: 6px;
 }
 
-/* States */
+/* States & Pagination */
 .empty-state { margin-top: 60px; }
 .loading-state {
   display: flex;
   justify-content: center;
   padding: 40px;
+}
+.pagination-wrap {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 24px;
+  padding: 12px 0 16px;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.pagination-count {
+  font-size: 13px;
+  color: #78716c;
+  margin-right: 6px;
+}
+html.dark .pagination-count {
+  color: #a8a29e;
 }
 
 /* ===================== Responsive ===================== */

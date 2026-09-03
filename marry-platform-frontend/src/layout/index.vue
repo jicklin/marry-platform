@@ -205,21 +205,37 @@ const appStore = useAppStore()
 const userStore = useUserStore()
 const permissionStore = usePermissionStore()
 const isFullscreen = ref(false)
-
-const isMobile = ref(false)
+const isMobile = ref(typeof window !== 'undefined' ? window.innerWidth <= 768 : false)
 const mobileDrawerVisible = ref(false)
 
 function checkMobile() {
-  isMobile.value = window.innerWidth <= 768
+  if (typeof window !== 'undefined') {
+    isMobile.value = window.innerWidth <= 768
+  }
 }
+
+let mqListener: ((e: MediaQueryListEvent) => void) | null = null
+let mediaQueryList: MediaQueryList | null = null
 
 onMounted(() => {
   checkMobile()
+  if (typeof window !== 'undefined' && window.matchMedia) {
+    mediaQueryList = window.matchMedia('(max-width: 768px)')
+    mqListener = (e: MediaQueryListEvent) => {
+      isMobile.value = e.matches
+    }
+    mediaQueryList.addEventListener('change', mqListener)
+  }
   window.addEventListener('resize', checkMobile)
+  window.addEventListener('orientationchange', checkMobile)
 })
 
 onBeforeUnmount(() => {
   window.removeEventListener('resize', checkMobile)
+  window.removeEventListener('orientationchange', checkMobile)
+  if (mediaQueryList && mqListener) {
+    mediaQueryList.removeEventListener('change', mqListener)
+  }
 })
 
 function handleMobileLogoClick() {
@@ -574,7 +590,17 @@ async function handleLogout() {
   transform: translateY(-8px);
 }
 
+.mobile-menu-btn {
+  display: none;
+}
+
 @media (max-width: 768px) {
+  .app-sider {
+    display: none !important;
+  }
+  .mobile-menu-btn {
+    display: inline-flex !important;
+  }
   .header-bar {
     padding: 0 12px;
     height: 54px;
